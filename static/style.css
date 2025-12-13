@@ -1,0 +1,59 @@
+/* --- ESTILOS GENERALES (Aplican a toda la web) --- */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    min-height: 100vh; /* Asegura que la página cubra el alto */
+}
+
+/* --- ESTILO SOLO PARA LOGIN Y REGISTRO --- */
+.modo-login {
+    /* Fondo con imagen solo aquí */
+    background-image: url('fondo_login.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    /* Centrado perfecto (Flexbox) solo para la tarjeta de login */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Fija la altura al 100% de la ventana */
+}
+
+/* --- ESTILO PARA EL DASHBOARD --- */
+.modo-dashboard {
+    background-color: #f4f6f9; /* Un gris muy suave y profesional para trabajar */
+    display: block; /* Flujo normal: Barra arriba, contenido abajo */
+}
+
+/* --- TARJETAS --- */
+.card {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    /* Quitamos el ancho fijo para que sirva en el dashboard también */
+}
+
+/* Para el login, forzamos un ancho específico */
+.login-card {
+    width: 400px;
+    padding: 20px;
+}
+
+/* --- BOTONES --- */
+.boton-principal {
+    background-color: #2C3E50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    width: 100%;
+}
+
+.boton-principal:hover {
+    background-color: #34495E;
+}
