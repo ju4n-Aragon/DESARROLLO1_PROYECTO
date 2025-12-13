@@ -88,3 +88,6 @@ FROM usuarios
 WHERE username = 'karol_bts'
 ON CONFLICT (id_usuario) 
 DO UPDATE SET tarifa = 300.0, especialidad = 'Ciberseguridad'; -- Si ya existe, actualiza
+
+
+ALTER TABLE reservas DROP CONSTRAINT IF EXISTS reservas_fecha_check;

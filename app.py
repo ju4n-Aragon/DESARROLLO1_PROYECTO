@@ -108,16 +108,36 @@ def crear_cita():
 def gestionar_cita():
     if 'usuario' not in session: return redirect(url_for('login'))
     
-    id_reserva = request.form['id_reserva']
-    accion = request.form['accion'] # 'completar' o 'cancelar'
+    # 1. Recibimos los datos y los imprimimos en la consola (MIRA TU TERMINAL NEGRA)
+    id_reserva_str = request.form['id_reserva']
+    accion = request.form['accion'] 
     notas = request.form.get('notas', '') 
     
+    print(f"--- INTENTANDO ACTUALIZAR ---")
+    print(f"ID recibido (Texto): {id_reserva_str}")
+    print(f"Acción: {accion}")
+    print(f"Notas: {notas}")
+
+    # 2. CONVERSIÓN EXPLÍCITA A NÚMERO (Vital para SQL)
+    try:
+        id_reserva = int(id_reserva_str)
+    except ValueError:
+        flash("Error: El ID de la reserva no es válido.")
+        return redirect(url_for('dashboard'))
+
+    # 3. Lógica de estados (CUIDADO CON LAS MAYÚSCULAS)
     if accion == 'completar':
-        db.actualizar_estado_cita(id_reserva, 'Completada', notas)
-        flash("¡Cita completada! Honorarios sumados.")
+        # "Completada" debe ser IDÉNTICO a lo que pusiste en el SQL CHECK
+        exito, msg = db.actualizar_estado_cita(id_reserva, 'Completada', notas)
     elif accion == 'cancelar':
-        db.actualizar_estado_cita(id_reserva, 'Cancelada', "Cancelada por consultor.")
-        flash("Cita cancelada.")
+        exito, msg = db.actualizar_estado_cita(id_reserva, 'Cancelada', "Cancelada por consultor.")
+    
+    print(f"Resultado BD: {exito} - {msg}") # Chivato final
+    
+    if exito:
+        flash(msg)
+    else:
+        flash(f"Error al guardar: {msg}")
         
     return redirect(url_for('dashboard'))
 
