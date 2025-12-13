@@ -1,0 +1,105 @@
+-- Script SQL para crear la base de datos en PostgreSQL
+-- Este script asume que estás conectado a PostgreSQL como superusuario o con permisos para crear bases de datos.
+-- Puedes ejecutarlo en psql o en una herramienta como pgAdmin.
+
+-- Crear la base de datos (si no existe)
+CREATE DATABASE consultores_db
+    WITH 
+    OWNER = postgres  -- Cambia 'postgres' por tu usuario si es necesario
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.UTF-8'
+    LC_CTYPE = 'en_US.UTF-8'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+
+-- Conéctate a la nueva base de datos (en psql: \c consultores_db)
+-- Ahora, crea el esquema de tablas
+
+-- Tabla principal de usuarios
+-- Representa la clase base 'Usuario' del diagrama, con herencia para roles (Cliente, Consultor, Admin)
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,  -- En producción, usa hashing (e.g., con pg_crypto), aquí es plain para simplicidad
+    nombre VARCHAR(100) NOT NULL,
+    rol VARCHAR(20) NOT NULL CHECK (rol IN ('admin', 'cliente', 'consultor'))
+);
+
+-- Tabla para detalles específicos de Consultores (herencia de Usuario)
+-- Atributos como tarifa y especialidad del diagrama
+CREATE TABLE IF NOT EXISTS consultores (
+    id_usuario INTEGER PRIMARY KEY REFERENCES usuarios(id) ON DELETE CASCADE,
+    tarifa DECIMAL(10, 2) NOT NULL CHECK (tarifa > 0),
+    especialidad VARCHAR(50) NOT NULL
+);
+
+-- Tabla para reservas (citas)
+-- Representa la clase 'Cita' del diagrama, con relaciones a Cliente y Consultor
+CREATE TABLE IF NOT EXISTS reservas (
+    id SERIAL PRIMARY KEY,
+    id_cliente INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    id_consultor INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    fecha TIMESTAMP NOT NULL CHECK (fecha > CURRENT_TIMESTAMP),  -- No permite fechas pasadas, como en el código
+    estado VARCHAR(20) NOT NULL DEFAULT 'Activa' CHECK (estado IN ('Activa', 'Cancelada', 'Completada'))  -- Enum implícito del diagrama, agregué 'Completada' para escalabilidad
+);
+
+-- Índices para optimización (opcional pero recomendado)
+CREATE INDEX idx_usuarios_username ON usuarios(username);
+CREATE INDEX idx_reservas_fecha ON reservas(fecha);
+CREATE INDEX idx_reservas_cliente ON reservas(id_cliente);
+CREATE INDEX idx_reservas_consultor ON reservas(id_consultor);
+
+-- Datos iniciales basados en el backend.py
+-- Insertar usuarios iniciales (incluyendo los consultores adicionales de la lista disponible)
+INSERT INTO usuarios (username, password, nombre, rol) VALUES
+    ('admin', '1234', 'Administrador', 'admin'),
+    ('cliente', '1234', 'Cliente Pruebas', 'cliente'),
+    ('ana', '1234', 'Dra. Ana (Finanzas)', 'consultor'),
+    ('carlos', '1234', 'Ing. Carlos (Tecnología)', 'consultor'),
+    ('sofia', '1234', 'Lic. Sofia (Marketing)', 'consultor')
+ON CONFLICT (username) DO NOTHING;  -- Evita duplicados si se ejecuta múltiples veces
+
+-- Insertar detalles de consultores
+INSERT INTO consultores (id_usuario, tarifa, especialidad)
+SELECT id, 100.0, 'Finanzas' FROM usuarios WHERE username = 'ana'
+ON CONFLICT (id_usuario) DO NOTHING;
+
+INSERT INTO consultores (id_usuario, tarifa, especialidad)
+SELECT id, 150.0, 'Tecnología' FROM usuarios WHERE username = 'carlos'
+ON CONFLICT (id_usuario) DO NOTHING;
+
+INSERT INTO consultores (id_usuario, tarifa, especialidad)
+SELECT id, 120.0, 'Marketing' FROM usuarios WHERE username = 'sofia'
+ON CONFLICT (id_usuario) DO NOTHING;
+
+-- Las reservas están vacías inicialmente, como en el código (self.reservas = [])
+
+-- Ejemplos de consultas útiles para integrar con el programa Python
+-- (Tendrías que modificar backend.py para usar psycopg2 o SQLAlchemy en lugar de diccionarios)
+
+-- Obtener consultores disponibles (para el combobox)
+-- SELECT u.nombre, c.tarifa FROM usuarios u JOIN consultores c ON u.id = c.id_usuario WHERE u.rol = 'consultor';
+
+-- Autenticar usuario
+-- SELECT rol FROM usuarios WHERE username = 'ana' AND password = '1234';
+
+-- Crear reserva (ejemplo con IDs)
+-- INSERT INTO reservas (id_cliente, id_consultor, fecha, estado) VALUES (2, 3, '2025-12-10 14:00:00', 'Activa');
+
+-- Obtener reservas por cliente
+-- SELECT r.id, u_cons.nombre AS consultor, r.fecha, r.estado 
+-- FROM reservas r 
+-- JOIN usuarios u_cons ON r.id_consultor = u_cons.id 
+-- WHERE r.id_cliente = (SELECT id FROM usuarios WHERE username = 'cliente');
+
+-- Obtener reservas por consultor
+-- SELECT r.id, u_cli.nombre AS cliente, r.fecha, r.estado 
+-- FROM reservas r 
+-- JOIN usuarios u_cli ON r.id_cliente = u_cli.id 
+-- WHERE r.id_consultor = (SELECT id FROM usuarios WHERE username = 'ana');
+
+-- Cancelar reserva (con chequeo de 24h)
+-- UPDATE reservas SET estado = 'Cancelada' WHERE id = 1 AND fecha > CURRENT_TIMESTAMP + INTERVAL '24 hours';
+
+-- Estadísticas para admin
+-- SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE estado = 'Activa') AS activas FROM reservas;

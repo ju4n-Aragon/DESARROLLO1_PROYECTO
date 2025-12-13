@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Consultores S.A.S</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="modo-login">
+
+    <div class="card login-card bg-white">
+        <div class="card-body">
+            <h3 class="text-center mb-4" style="color: #2C3E50; font-weight: bold;">Crear Cuenta</h3>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-warning">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="/registro">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Quiero registrarme como:</label>
+                    <select name="rol" id="selector-rol" class="form-select" onchange="mostrarCamposExtra()">
+                        <option value="cliente">Cliente</option>
+                        <option value="consultor">Consultor</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" name="nombre" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <div id="campos-consultor" style="display: none; background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                    <h6 class="text-primary fw-bold">Perfil Profesional</h6>
+                    <div class="mb-2">
+                        <label class="form-label small">Especialidad (Ej: Ciberseguridad)</label>
+                        <input type="text" name="especialidad" class="form-control form-control-sm">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Tarifa por Hora ($)</label>
+                        <input type="number" name="tarifa" class="form-control form-control-sm" value="0">
+                    </div>
+                </div>
+                
+                <button type="submit" class="boton-principal">REGISTRARME</button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('login') }}" class="text-secondary small">¿Ya tienes cuenta? Iniciar Sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function mostrarCamposExtra() {
+            var rol = document.getElementById("selector-rol").value;
+            var campos = document.getElementById("campos-consultor");
+            
+            if (rol === "consultor") {
+                campos.style.display = "block";
+            } else {
+                campos.style.display = "none";
+            }
+        }
+    </script>
+
+</body>
+</html>

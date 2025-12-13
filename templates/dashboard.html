@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Panel Principal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body style="background-color: #f8f9fa;"> <nav class="navbar navbar-dark bg-dark px-4">
+        <span class="navbar-brand mb-0 h1">Sistema de Gestión</span>
+        <div class="d-flex align-items-center">
+            <span class="text-white me-3">Hola, {{ usuario }}</span>
+            <a href="/logout" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ messages[0] }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0 text-primary">📅 Mis Reservas</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>{{ 'Consultor' if rol == 'cliente' else 'Cliente' }}</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for res in reservas %}
+                                <tr>
+                                    <td>{{ res[0] }}</td> <td>{{ res[1] }}</td> <td>{{ res[2] }}</td> <td>
+                                        {% if res[3] == 'Activa' %}
+                                            <span class="badge bg-success">Activa</span>
+                                        {% elif res[3] == 'Cancelada' %}
+                                            <span class="badge bg-danger">Cancelada</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Completada</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No tienes reservas registradas.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">➕ Nueva Cita</h4>
+                    </div>
+                    <div class="card-body">
+                        <form action="/crear_cita" method="POST">
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">1. Elige al Consultor:</label>
+                                <select name="consultor" class="form-select" required>
+                                    <option value="" disabled selected>-- Seleccionar --</option>
+                                    {% for cons in consultores %}
+                                        <option value="{{ cons.nombre }}">
+                                            {{ cons.nombre }} - ${{ cons.tarifa }}/hora
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">2. Fecha y Hora:</label>
+                                <input type="datetime-local" name="fecha" class="form-control" required>
+                            </div>
+
+                            <button type="submit" class="boton-principal w-100 py-2">AGENDAR CITA</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
