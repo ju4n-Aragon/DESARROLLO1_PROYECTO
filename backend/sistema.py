@@ -25,12 +25,13 @@ class SistemaBackend:
         if not self.conn: return []
         try:
             self.cur.execute("""
-                SELECT u.nombre, c.tarifa 
+                SELECT u.nombre, c.tarifa, c.especialidad 
                 FROM usuarios u 
                 JOIN consultores c ON u.id = c.id_usuario
             """)
             rows = self.cur.fetchall()
-            return [{"nombre": row[0], "tarifa": float(row[1])} for row in rows]
+            # Ahora devolvemos también la especialidad
+            return [{"nombre": row[0], "tarifa": float(row[1]), "especialidad": row[2]} for row in rows]
         except Exception as e:
             print(f"Error buscando consultores: {e}")
             return []
@@ -39,14 +40,12 @@ class SistemaBackend:
         """Busca toda la info de un usuario (cliente o consultor)"""
         if not self.conn: return None
         try:
-            # 1. Buscar datos básicos
             self.cur.execute("SELECT id, nombre, rol FROM usuarios WHERE username = %s", (username,))
             row = self.cur.fetchone()
             if not row: return None
             
             datos = {"id": row[0], "nombre": row[1], "rol": row[2]}
             
-            # 2. Si es consultor, buscar datos extra
             if row[2] == 'consultor':
                 self.cur.execute("SELECT especialidad, tarifa FROM consultores WHERE id_usuario = %s", (row[0],))
                 cons = self.cur.fetchone()
@@ -63,7 +62,7 @@ class SistemaBackend:
         if not self.conn: return []
         try:
             self.cur.execute("""
-                SELECT r.id, u_cons.nombre, r.fecha, r.estado 
+                SELECT r.id, u_cons.nombre, r.fecha, r.estado, u_cons.email, r.notas
                 FROM reservas r
                 JOIN usuarios u_cli ON r.id_cliente = u_cli.id
                 JOIN usuarios u_cons ON r.id_consultor = u_cons.id
@@ -79,8 +78,9 @@ class SistemaBackend:
         """Trae las reservas asignadas a un consultor"""
         if not self.conn: return []
         try:
+            # ¡IMPORTANTE! Agregamos u_cli.email y r.notas a la consulta
             self.cur.execute("""
-                SELECT r.id, u_cli.nombre, r.fecha, r.estado
+                SELECT r.id, u_cli.nombre, r.fecha, r.estado, u_cli.email, r.notas
                 FROM reservas r
                 JOIN usuarios u_cli ON r.id_cliente = u_cli.id
                 JOIN usuarios u_cons ON r.id_consultor = u_cons.id
@@ -91,6 +91,24 @@ class SistemaBackend:
         except Exception as e:
             print(e)
             return []
+
+    def calcular_ganancias_consultor(self, usuario_consultor):
+        """Suma las tarifas de todas las citas completadas"""
+        if not self.conn: return 0
+        try:
+            sql = """
+                SELECT SUM(c.tarifa)
+                FROM reservas r
+                JOIN usuarios u ON r.id_consultor = u.id
+                JOIN consultores c ON u.id = c.id_usuario
+                WHERE u.username = %s AND r.estado = 'Completada';
+            """
+            self.cur.execute(sql, (usuario_consultor,))
+            resultado = self.cur.fetchone()[0]
+            return float(resultado) if resultado else 0.0
+        except Exception as e:
+            print(f"Error calculando ganancias: {e}")
+            return 0
 
     # --- LÓGICA DE NEGOCIO ---
 
@@ -112,14 +130,12 @@ class SistemaBackend:
     def registrar_usuario(self, usuario, password, nombre_completo, email, rol="cliente", especialidad="General", tarifa=0):
         if not self.conn: return False, "Sin conexión"
         try:
-            # 1. Insertamos el Usuario base
             self.cur.execute(
                 "INSERT INTO usuarios (username, password, nombre, email, rol) VALUES (%s, %s, %s, %s, %s) RETURNING id",
                 (usuario, password, nombre_completo, email, rol)
             )
             new_id = self.cur.fetchone()[0]
             
-            # 2. Si es CONSULTOR, guardamos sus datos profesionales reales
             if rol == 'consultor':
                 self.cur.execute(
                     "INSERT INTO consultores (id_usuario, tarifa, especialidad) VALUES (%s, %s, %s)",
@@ -127,7 +143,7 @@ class SistemaBackend:
                 )
             return True, "Registro exitoso."
         except psycopg2.IntegrityError:
-            self.conn.rollback()
+            self.conn.rollback() # Importante rollback si falla
             return False, "Usuario o correo ya existe."
         except Exception as e:
             self.conn.rollback()
@@ -136,11 +152,13 @@ class SistemaBackend:
     def crear_reserva(self, usuario_cliente, consultor_nombre, fecha_str):
         if not self.conn: return False, "Sin conexión"
         try:
+            # Pequeño ajuste por si la fecha viene con T (formato HTML) o espacio
+            fecha_str = fecha_str.replace("T", " ")
             fecha_cita = datetime.strptime(fecha_str, "%Y-%m-%d %H:%M")
+            
             if fecha_cita < datetime.now():
                 return False, "No puedes reservar en el pasado."
 
-            # Buscar IDs
             self.cur.execute("SELECT id FROM usuarios WHERE username = %s", (usuario_cliente,))
             id_cli = self.cur.fetchone()[0]
 
@@ -149,52 +167,26 @@ class SistemaBackend:
             if not res_cons: return False, "Consultor no encontrado"
             id_cons = res_cons[0]
 
-            # Insertar
             self.cur.execute(
                 "INSERT INTO reservas (id_cliente, id_consultor, fecha, estado) VALUES (%s, %s, %s, 'Activa')",
                 (id_cli, id_cons, fecha_cita)
             )
             return True, "Cita reservada con éxito."
         except Exception as e:
+            print(e) # Para ver el error en consola
             self.conn.rollback()
             return False, f"Error: {e}"
 
-    def cancelar_reserva(self, reserva_id):
-        # --- AQUÍ ESTABA EL ERROR (Faltaba el código) ---
+    def actualizar_estado_cita(self, id_reserva, nuevo_estado, notas=""):
+        """Método general para Cancelar o Completar citas desde el Dashboard"""
         if not self.conn: return False, "Sin conexión"
         try:
-            self.cur.execute("SELECT fecha FROM reservas WHERE id = %s", (reserva_id,))
-            res = self.cur.fetchone()
-            if not res: return False, "Reserva no encontrada"
-            
-            fecha_cita = res[0]
-            # Asegurar formato datetime de Python
-            if hasattr(fecha_cita, 'to_pydatetime'): fecha_cita = fecha_cita.to_pydatetime()
-            
-            # Regla de cancelación 24 horas
-            horas_restantes = (fecha_cita - datetime.now()).total_seconds() / 3600
-            
-            if horas_restantes < 24:
-                return False, f"Falta muy poco ({int(horas_restantes)}h). No se puede cancelar."
-
-            self.cur.execute("UPDATE reservas SET estado = 'Cancelada' WHERE id = %s", (reserva_id,))
-            return True, "Reserva cancelada exitosamente."
+            sql = "UPDATE reservas SET estado = %s, notas = %s WHERE id = %s"
+            self.cur.execute(sql, (nuevo_estado, notas, id_reserva))
+            return True, "Estado actualizado."
         except Exception as e:
             self.conn.rollback()
-            return False, f"Error: {e}"
-
-    def finalizar_reserva(self, reserva_id, notas_consultor):
-        if not self.conn: return False, "Sin conexión"
-        try:
-            # Actualizamos estado a 'Completada' y guardamos las notas
-            self.cur.execute(
-                "UPDATE reservas SET estado = 'Completada', notas = %s WHERE id = %s",
-                (notas_consultor, reserva_id)
-            )
-            return True, "Cita finalizada y notas guardadas."
-        except Exception as e:
-            self.conn.rollback()
-            return False, f"Error: {e}"
+            return False, f"Error SQL: {e}"
 
     def __del__(self):
         if hasattr(self, 'cur') and self.cur: self.cur.close()

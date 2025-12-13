@@ -1,45 +1,42 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from backend.sistema import SistemaBackend # Importamos tu backend existente
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from backend.sistema import SistemaBackend
 
 app = Flask(__name__)
-app.secret_key = "mi_clave_super_secreta" # Necesario para guardar la sesión del usuario
+app.secret_key = "secreto_seguro"  # Necesario para usar flash messages y session
 
-# Instanciamos tu base de datos
+# Conectamos con el backend
 db = SistemaBackend()
 
-# --- RUTA 1: LOGIN (Página de inicio) ---
+# --- RUTA 1: LOGIN ---
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Recogemos los datos del formulario HTML
         usuario = request.form['username']
         password = request.form['password']
         
-        # Usamos TU lógica de backend
-        exito, rol = db.autenticar(usuario, password)
+        exito, user_id = db.autenticar(usuario, password)
         
         if exito:
-            # Guardamos datos en la "sesión" (memoria del navegador)
+            # Guardamos datos en la sesión del navegador
             session['usuario'] = usuario
-            session['rol'] = rol
+            datos_usuario = db.get_usuario(usuario)
+            session['rol'] = datos_usuario['rol']
             return redirect(url_for('dashboard'))
         else:
             flash("Usuario o contraseña incorrectos")
             
     return render_template('login.html')
 
-# --- RUTA DE REGISTRO (Actualizada) ---
+# --- RUTA 2: REGISTRO ---
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
-        # 1. Recoger datos básicos
-        rol = request.form['rol'] # 'cliente' o 'consultor'
+        rol = request.form['rol']
         nombre = request.form['nombre']
         email = request.form['email']
         usuario = request.form['username']
         password = request.form['password']
         
-        # 2. Recoger datos extra (solo si es consultor)
         especialidad = "General"
         tarifa = 0
         
@@ -50,7 +47,6 @@ def registro():
             except ValueError:
                 tarifa = 0
         
-        # 3. Guardar en Base de Datos usando tu backend
         exito, msg = db.registrar_usuario(
             usuario, password, nombre, email, 
             rol=rol, 
@@ -66,7 +62,7 @@ def registro():
             
     return render_template('register.html')
 
-# --- RUTA 2: DASHBOARD (Actualizada) ---
+# --- RUTA 3: DASHBOARD (PANEL PRINCIPAL) ---
 @app.route('/dashboard')
 def dashboard():
     if 'usuario' not in session: return redirect(url_for('login'))
@@ -74,32 +70,30 @@ def dashboard():
     usuario = session['usuario']
     rol = session['rol']
     
-    # 1. Recuperamos la lista de consultores para el menú desplegable
     consultores = db.get_consultores_disponibles()
+    ganancias = 0  # Variable nueva para el dinero
     
-    # 2. Recuperamos las reservas existentes para la tabla
     if rol == 'cliente':
         reservas = db.get_reservas_cliente(usuario)
     else:
+        # LÓGICA NUEVA: Si es consultor, traemos reservas Y calculamos dinero
         reservas = db.get_reservas_consultor(usuario)
+        ganancias = db.calcular_ganancias_consultor(usuario)
     
-    # Enviamos todo al HTML
-    return render_template('dashboard.html', usuario=usuario, rol=rol, consultores=consultores, reservas=reservas)
+    # Enviamos la variable 'ganancias' al HTML
+    return render_template('dashboard.html', usuario=usuario, rol=rol, 
+                           consultores=consultores, reservas=reservas, ganancias=ganancias)
 
-# --- RUTA NUEVA: PROCESAR LA CITA ---
+# --- RUTA 4: CREAR CITA ---
 @app.route('/crear_cita', methods=['POST'])
 def crear_cita():
     if 'usuario' not in session: return redirect(url_for('login'))
     
     usuario = session['usuario']
-    # Recogemos los datos del formulario HTML
     consultor_nombre = request.form['consultor']
-    fecha_html = request.form['fecha'] # Viene como "2023-12-12T14:30"
+    fecha_html = request.form['fecha']
     
-    # Pequeño truco: Python espera espacio en vez de 'T' entre fecha y hora
-    fecha_final = fecha_html.replace('T', ' ')
-    
-    exito, msg = db.crear_reserva(usuario, consultor_nombre, fecha_final)
+    exito, msg = db.crear_reserva(usuario, consultor_nombre, fecha_html)
     
     if exito:
         flash("¡Cita agendada con éxito!")
@@ -108,11 +102,30 @@ def crear_cita():
         
     return redirect(url_for('dashboard'))
 
-# --- RUTA 3: CERRAR SESIÓN ---
+# --- RUTA 5: GESTIONAR CITA (NUEVA) ---
+# Esta ruta recibe los clics de "Completar" o "Cancelar"
+@app.route('/gestionar_cita', methods=['POST'])
+def gestionar_cita():
+    if 'usuario' not in session: return redirect(url_for('login'))
+    
+    id_reserva = request.form['id_reserva']
+    accion = request.form['accion'] # 'completar' o 'cancelar'
+    notas = request.form.get('notas', '') 
+    
+    if accion == 'completar':
+        db.actualizar_estado_cita(id_reserva, 'Completada', notas)
+        flash("¡Cita completada! Honorarios sumados.")
+    elif accion == 'cancelar':
+        db.actualizar_estado_cita(id_reserva, 'Cancelada', "Cancelada por consultor.")
+        flash("Cita cancelada.")
+        
+    return redirect(url_for('dashboard'))
+
+# --- RUTA 6: CERRAR SESIÓN ---
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True)

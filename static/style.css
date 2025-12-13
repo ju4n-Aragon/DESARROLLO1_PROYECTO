@@ -1,43 +1,59 @@
-/* --- ESTILOS GENERALES (Aplican a toda la web) --- */
+/* --- ESTILOS GENERALES --- */
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
-    min-height: 100vh; /* Asegura que la página cubra el alto */
+    min-height: 100vh;
 }
 
-/* --- ESTILO SOLO PARA LOGIN Y REGISTRO --- */
+/* --- MODO LOGIN (Imagen de fondo) --- */
 .modo-login {
-    /* Fondo con imagen solo aquí */
     background-image: url('fondo_login.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    
-    /* Centrado perfecto (Flexbox) solo para la tarjeta de login */
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh; /* Fija la altura al 100% de la ventana */
+    height: 100vh;
+    color: #333; /* Texto oscuro por defecto */
 }
 
-/* --- ESTILO PARA EL DASHBOARD --- */
+/* --- MODO DASHBOARD (Fondo gris plano) --- */
 .modo-dashboard {
-    background-color: #f4f6f9; /* Un gris muy suave y profesional para trabajar */
-    display: block; /* Flujo normal: Barra arriba, contenido abajo */
+    background-color: #f4f6f9;
+    display: block;
+    color: #212529; /* Texto CASI negro (gris muy oscuro) para todo el dashboard */
 }
 
-/* --- TARJETAS --- */
+/* --- TARJETAS (CARDS) --- */
 .card {
-    background-color: rgba(255, 255, 255, 0.95) !important;
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    /* Quitamos el ancho fijo para que sirva en el dashboard también */
+    border: none;
+    /* Quitamos el !important para que no rompa la tarjeta verde */
+    background-color: rgba(255, 255, 255, 0.98); 
+    color: #212529; /* Texto negro dentro de las tarjetas */
 }
 
-/* Para el login, forzamos un ancho específico */
-.login-card {
-    width: 400px;
-    padding: 20px;
+/* --- REGLA ESPECIAL: Para la tarjeta de Dinero (bg-success) --- */
+.card.bg-success {
+    background-color: #198754 !important; /* Verde Bootstrap forzado */
+    color: #ffffff !important; /* Texto BLANCO forzado solo aquí */
+}
+/* Aseguramos que los textos pequeños dentro de la tarjeta verde sean blancos */
+.card.bg-success h2, 
+.card.bg-success h5, 
+.card.bg-success small {
+    color: #ffffff !important;
+}
+
+/* --- TABLAS (Forzar texto negro en las filas) --- */
+.table {
+    color: #212529 !important;
+}
+.table td, .table th {
+    color: #212529 !important; /* Negrilla en las celdas */
+    vertical-align: middle;
 }
 
 /* --- BOTONES --- */
@@ -53,7 +69,13 @@ body {
     transition: background 0.3s;
     width: 100%;
 }
-
 .boton-principal:hover {
     background-color: #34495E;
+    color: white;
+}
+
+/* Ajuste para el Login */
+.login-card {
+    width: 400px;
+    padding: 20px;
 }
