@@ -79,3 +79,14 @@ body {
     width: 400px;
     padding: 20px;
 }
+
+.modo-cliente {
+    /* SOLO EL NOMBRE DEL ARCHIVO, sin barras ni carpetas */
+    background-image: url('fondo_dashboard_cliente.jpg'); 
+    
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: #212529;
+}
