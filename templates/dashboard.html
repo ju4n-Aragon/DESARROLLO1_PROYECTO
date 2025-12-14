@@ -1,10 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Panel Principal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Principal - Consultores SAS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <style>
+        .info-box { 
+            background-color: #e3f2fd; 
+            border-left: 5px solid #2196f3; 
+            padding: 15px; 
+            margin-top: 15px; 
+            border-radius: 4px; 
+            display: none; /* Se oculta por defecto */
+        }
+        .discount-badge { 
+            background-color: #ff9800; 
+            color: white; 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            font-size: 0.9em; 
+        }
+        .card-custom { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
 </head>
+
 <body class="{{ 'modo-cliente' if rol == 'cliente' else 'modo-dashboard' }}">
 
     <nav class="navbar navbar-dark bg-dark px-4">
@@ -13,14 +36,15 @@
             <span class="text-white me-3">
                 Hola, {{ usuario }} <span class="badge bg-info text-dark ms-2">{{ rol|upper }}</span>
             </span>
-            <a href="/logout" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
         </div>
     </nav>
 
     <div class="container mt-5">
+        
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-success alert-dismissible fade show">
+                <div class="alert alert-info alert-dismissible fade show">
                     {{ messages[0] }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -31,44 +55,35 @@
         <div class="row mb-5">
             <div class="col-12 text-center mb-4">
                 <h2 class="display-6 fw-bold text-dark">📊 Panel de Control Corporativo</h2>
-                <p class="text-muted">Estadísticas en tiempo real para la toma de decisiones estratégicas.</p>
+                <p class="text-muted">Estadísticas en tiempo real para la toma de decisiones.</p>
             </div>
-
             <div class="col-md-4">
                 <div class="card text-white bg-success mb-3 shadow h-100">
                     <div class="card-header bg-success border-bottom border-light">KPI: Finanzas</div>
                     <div class="card-body text-center">
                         <h5 class="card-title">Ingresos Totales</h5>
                         <h1 class="display-4 fw-bold">${{ stats.ingresos_totales }}</h1>
-                        <p class="card-text small">Dinero procesado y liberado en plataforma.</p>
                     </div>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="card text-white bg-primary mb-3 shadow h-100">
                     <div class="card-header bg-primary border-bottom border-light">KPI: Crecimiento</div>
                     <div class="card-body text-center">
                         <h5 class="card-title">Usuarios Activos</h5>
                         <h1 class="display-4 fw-bold">{{ stats.total_usuarios }}</h1>
-                        <p class="card-text small">Clientes y Consultores registrados.</p>
                     </div>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="card text-white bg-warning mb-3 shadow h-100">
                     <div class="card-header bg-warning border-bottom border-dark text-dark">KPI: Rendimiento</div>
                     <div class="card-body text-center text-dark">
                         <h5 class="card-title">Consultor Estrella 🏆</h5>
                         <h3 class="fw-bold mt-3">{{ stats.consultor_top }}</h3>
-                        <p class="card-text small mt-2">Mayor número de sesiones exitosas.</p>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="alert alert-info text-center">
-            🔒 Vista restringida solo para la Alta Dirección.
         </div>
         {% endif %}
 
@@ -98,9 +113,9 @@
                                 {{ '📅 Mis Reservas y Pagos' if rol == 'cliente' else '💼 Gestión de Agenda' }}
                             </h4>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body table-responsive">
                             <table class="table table-hover align-middle">
-                                <thead>
+                                <thead class="table-light">
                                     <tr>
                                         <th>ID</th>
                                         <th>{{ 'Consultor' if rol == 'cliente' else 'Cliente' }}</th>
@@ -112,38 +127,42 @@
                                     {% for res in reservas %}
                                     <tr>
                                         <td>{{ res[0] }}</td>
-                                        <td>{{ res[1] }}<br><small class="text-muted">{{ res[4] }}</small></td>
+                                        <td>
+                                            <strong>{{ res[1] }}</strong><br>
+                                            <small class="text-muted">{{ res[4] }}</small>
+                                        </td>
                                         <td>{{ res[2] }}</td>
-                                        
                                         <td>
                                             {% if rol == 'cliente' and res[3] == 'Activa' %}
-                                                <form action="/gestionar_cita" method="POST" class="d-flex flex-column gap-2">
+                                                <form action="{{ url_for('gestionar_cita') }}" method="POST" class="d-flex flex-column gap-2">
                                                     <input type="hidden" name="id_reserva" value="{{ res[0] }}">
                                                     
-                                                    <small class="text-muted fst-italic">¿Recibiste la asesoría?</small>
-                                                    <div class="d-flex gap-1">
-                                                        <input type="text" name="notas" class="form-control form-control-sm" placeholder="Calificación..." required>
-                                                        <button type="submit" name="accion" value="completar" class="btn btn-success btn-sm fw-bold" title="Liberar Pago">
-                                                            ✔ APROBAR PAGO
-                                                        </button>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" name="notas" class="form-control" placeholder="Calificación (1-5)" required>
+                                                        <button type="submit" name="accion" value="completar" class="btn btn-success fw-bold">✔ PAGAR</button>
                                                     </div>
-                                                    <button type="submit" name="accion" value="cancelar" class="btn btn-link text-danger btn-sm text-decoration-none p-0" formnovalidate>
-                                                        Cancelar Cita
-                                                    </button>
+                                                    <button type="submit" name="accion" value="cancelar" class="btn btn-link text-danger btn-sm text-decoration-none p-0 align-self-start">Cancelar Cita</button>
                                                 </form>
 
                                             {% elif rol == 'consultor' and res[3] == 'Activa' %}
-                                                <span class="badge bg-warning text-dark border border-dark">⏳ Esperando aprobación...</span>
-                                                <br><small class="text-muted">Cliente debe liberar el pago.</small>
+                                                <div class="d-flex flex-column gap-2">
+                                                    <span class="badge bg-warning text-dark border border-dark">⏳ Pendiente de Cliente</span>
+                                                    
+                                                    <form action="{{ url_for('gestionar_cita') }}" method="POST">
+                                                        <input type="hidden" name="id_reserva" value="{{ res[0] }}">
+                                                        <input type="hidden" name="notas" value="Cancelado por el Consultor">
+                                                        <button type="submit" name="accion" value="cancelar" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('¿Seguro que no puedes asistir? Se cancelará la cita.');">
+                                                            ❌ No puedo asistir
+                                                        </button>
+                                                    </form>
+                                                </div>
 
                                             {% else %}
                                                 {% if res[3] == 'Cancelada' %}
                                                     <span class="badge bg-danger">Cancelada</span>
                                                 {% else %}
-                                                    <span class="badge bg-success">💰 Pago Liberado</span>
-                                                    {% if res[5] %}
-                                                        <br><small class="text-muted fst-italic">"{{ res[5] }}"</small>
-                                                    {% endif %}
+                                                    <span class="badge bg-success">💰 Completada</span>
+                                                    <br><small>Pago: ${{ res[6] }}</small>
                                                 {% endif %}
                                             {% endif %}
                                         </td>
@@ -164,22 +183,44 @@
                             <h4 class="mb-0">💳 Reservar y Pagar</h4>
                         </div>
                         <div class="card-body">
-                            <div class="alert alert-warning text-center border-warning">
-                                <strong>¡OFERTA ONLINE!</strong> <br>Paga con tarjeta y obtén <strong>30% DE DESCUENTO</strong> inmediato.
+                            
+                            <div class="alert alert-warning text-center" id="box-oferta">
+                                <strong>¡SELECCIONA UN EXPERTO!</strong><br>
+                                Para ver sus descuentos exclusivos.
                             </div>
 
-                            <form action="/crear_cita" method="POST">
+                            <form action="{{ url_for('crear_cita') }}" method="POST">
+                                
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">1. Elige al Experto:</label>
-                                    <select name="consultor" class="form-select" required>
-                                        <option value="" disabled selected>-- Seleccionar --</option>
-                                        {% for cons in consultores %}
-                                            <option value="{{ cons.nombre }}">
-                                                {{ cons.nombre }} - Tarifa Base: ${{ cons.tarifa }}
-                                            </option>
+                                    <select class="form-select" name="consultor" id="select-consultor" required onchange="actualizarInfo()">
+                                        <option value="" selected disabled>-- Seleccionar --</option>
+                                        
+                                        {% for c in consultores %}
+                                        <option value="{{ c.nombre }}" 
+                                                data-tarifa="{{ c.tarifa }}"
+                                                data-desc="{{ c.descripcion }}"
+                                                data-exp="{{ c.experiencia }}"
+                                                data-descuento-txt="{{ c.descuento_txt }}"
+                                                data-precio-final="{{ c.precio_final_estimado }}">
+                                            {{ c.nombre }} - {{ c.especialidad }}
+                                        </option>
                                         {% endfor %}
                                     </select>
                                 </div>
+
+                                <div id="info-experto" class="info-box mb-3">
+                                    <h6 class="fw-bold" id="info-nombre">Nombre</h6>
+                                    <p class="mb-1 small text-muted" id="info-desc">...</p>
+                                    <p class="mb-2 small"><strong>Experiencia:</strong> <span id="info-exp">0</span> años.</p>
+                                    <hr class="my-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted text-decoration-line-through small" id="info-precio-base">$0.00</span>
+                                        <span class="discount-badge" id="info-badge">0% OFF</span>
+                                    </div>
+                                    <h4 class="text-primary text-end mt-2 m-0" id="info-total">Total: $0.00</h4>
+                                </div>
+
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">2. Fecha y Hora:</label>
                                     <input type="datetime-local" name="fecha" class="form-control" required>
@@ -188,19 +229,19 @@
                                 <hr>
                                 <h6 class="text-primary mb-3">Datos de Pago (Simulación Segura)</h6>
                                 <div class="mb-3">
-                                    <input type="text" class="form-control" placeholder="Número de Tarjeta (0000 0000...)" maxlength="19">
+                                    <input type="text" class="form-control" placeholder="Número de Tarjeta (0000...)" required>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col">
-                                        <input type="text" class="form-control" placeholder="MM/AA" maxlength="5">
+                                        <input type="text" class="form-control" placeholder="MM/AA" required>
                                     </div>
                                     <div class="col">
-                                        <input type="password" class="form-control" placeholder="CVC" maxlength="3">
+                                        <input type="password" class="form-control" placeholder="CVC" required>
                                     </div>
                                 </div>
 
-                                <button type="submit" class="boton-principal w-100 py-2">
-                                    🔒 PAGAR Y RESERVAR (Con -30%)
+                                <button type="submit" class="btn btn-dark w-100 py-2 fw-bold">
+                                    🔒 CONFIRMAR RESERVA
                                 </button>
                             </form>
                         </div>
@@ -208,7 +249,49 @@
                 </div>
                 {% endif %}
             </div>
-        {% endif %} </div>
+        {% endif %}
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function actualizarInfo() {
+            const select = document.getElementById('select-consultor');
+            const option = select.options[select.selectedIndex];
+            if (!option.value) return;
+
+            // Leer datos del HTML (data-attributes)
+            const descripcion = option.getAttribute('data-desc');
+            const experiencia = option.getAttribute('data-exp');
+            const tarifaBase = option.getAttribute('data-tarifa');
+            const descuentoTxt = option.getAttribute('data-descuento-txt');
+            const precioFinal = option.getAttribute('data-precio-final');
+
+            // Mostrar caja azul con info
+            document.getElementById('info-experto').style.display = 'block';
+            document.getElementById('info-nombre').innerText = option.text;
+            document.getElementById('info-desc').innerText = descripcion;
+            document.getElementById('info-exp').innerText = experiencia;
+            document.getElementById('info-precio-base').innerText = "$" + tarifaBase;
+            document.getElementById('info-total').innerText = "Total a Pagar: $" + precioFinal;
+
+            // Actualizar Badge y Alerta de Oferta
+            const badge = document.getElementById('info-badge');
+            const boxOferta = document.getElementById('box-oferta');
+
+            if (descuentoTxt && descuentoTxt !== "0%") {
+                badge.style.display = 'inline-block';
+                badge.innerText = descuentoTxt;
+                boxOferta.classList.remove('alert-warning', 'alert-secondary');
+                boxOferta.classList.add('alert-success');
+                boxOferta.innerHTML = `<strong>¡OFERTA APLICADA!</strong><br>Descuento del ${descuentoTxt} disponible.`;
+            } else {
+                badge.style.display = 'none';
+                boxOferta.classList.remove('alert-success', 'alert-warning');
+                boxOferta.classList.add('alert-secondary');
+                boxOferta.innerHTML = `<strong>PRECIO ESTÁNDAR</strong><br>Sin descuentos disponibles para este experto.`;
+            }
+        }
+    </script>
 </body>
 </html>
