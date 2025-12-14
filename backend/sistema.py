@@ -7,7 +7,7 @@ class SistemaBackend:
             self.conn = psycopg2.connect(
                 dbname="consultores_db",
                 user="postgres",
-                password="1234",  # <--- TU CONTRASEÑA
+                password="12345",  # <--- TU CONTRASEÑA
                 host="localhost",
                 port="5432"
             )
@@ -21,17 +21,41 @@ class SistemaBackend:
     # --- MÉTODOS DE LECTURA DE DATOS ---
 
     def get_consultores_disponibles(self):
-        """Obtiene la lista de consultores para el combobox"""
+        """Obtiene la lista de consultores con todos los detalles"""
         if not self.conn: return []
         try:
             self.cur.execute("""
-                SELECT u.nombre, c.tarifa, c.especialidad 
+                SELECT u.nombre, c.tarifa, c.especialidad, 
+                    c.descripcion, c.experiencia_años,
+                    c.primera_cita_descuento, c.porcentaje_descuento
                 FROM usuarios u 
                 JOIN consultores c ON u.id = c.id_usuario
+                ORDER BY u.nombre
             """)
             rows = self.cur.fetchall()
-            # Ahora devolvemos también la especialidad
-            return [{"nombre": row[0], "tarifa": float(row[1]), "especialidad": row[2]} for row in rows]
+            
+            consultores = []
+            for row in rows:
+                consultor = {
+                    "nombre": row[0],
+                    "tarifa": float(row[1]),
+                    "especialidad": row[2],
+                    "descripcion": row[3] or "Sin descripción disponible",
+                    "experiencia_años": row[4] or 0,
+                    "tiene_descuento": row[5] if row[5] is not None else False,
+                    "porcentaje_descuento": float(row[6]) if row[6] else 0.0
+                }
+                
+                # Calcular precio con descuento si aplica
+                if consultor["tiene_descuento"] and consultor["porcentaje_descuento"] > 0:
+                    descuento = (consultor["porcentaje_descuento"] / 100) * consultor["tarifa"]
+                    consultor["tarifa_con_descuento"] = round(consultor["tarifa"] - descuento, 2)
+                else:
+                    consultor["tarifa_con_descuento"] = consultor["tarifa"]
+                    
+                consultores.append(consultor)
+                
+            return consultores
         except Exception as e:
             print(f"Error buscando consultores: {e}")
             return []
@@ -127,7 +151,10 @@ class SistemaBackend:
             print(f"Error auth: {e}")
             return False, None
 
-    def registrar_usuario(self, usuario, password, nombre_completo, email, rol="cliente", especialidad="General", tarifa=0):
+    def registrar_usuario(self, usuario, password, nombre_completo, email, 
+                        rol="cliente", especialidad="General", tarifa=0,
+                        descripcion="", experiencia_años=0, 
+                        primera_cita_descuento=False, porcentaje_descuento=0):
         if not self.conn: return False, "Sin conexión"
         try:
             self.cur.execute(
@@ -137,13 +164,20 @@ class SistemaBackend:
             new_id = self.cur.fetchone()[0]
             
             if rol == 'consultor':
+                # Convertir checkbox a booleano PostgreSQL
+                tiene_descuento = 't' if primera_cita_descuento else 'f'
+                
                 self.cur.execute(
-                    "INSERT INTO consultores (id_usuario, tarifa, especialidad) VALUES (%s, %s, %s)",
-                    (new_id, tarifa, especialidad)
+                    """INSERT INTO consultores 
+                    (id_usuario, tarifa, especialidad, descripcion, 
+                        experiencia_años, primera_cita_descuento, porcentaje_descuento) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    (new_id, tarifa, especialidad, descripcion, 
+                    experiencia_años, tiene_descuento, porcentaje_descuento)
                 )
             return True, "Registro exitoso."
         except psycopg2.IntegrityError:
-            self.conn.rollback() # Importante rollback si falla
+            self.conn.rollback()
             return False, "Usuario o correo ya existe."
         except Exception as e:
             self.conn.rollback()

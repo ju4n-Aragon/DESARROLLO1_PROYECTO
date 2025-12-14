@@ -4,80 +4,841 @@
     <meta charset="UTF-8">
     <title>Registro - Consultores S.A.S</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .register-card {
+            width: 100%;
+            max-width: 700px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: none;
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-header-gradient {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: none;
+        }
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0d6efd;
+        }
+        .form-section-consultor {
+            border-left: 4px solid #198754;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
+        }
+        .role-badge {
+            font-size: 0.8em;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+        .role-badge.cliente {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .role-badge.consultor {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .step-indicator:before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: #e9ecef;
+            z-index: 1;
+        }
+        .step {
+            position: relative;
+            z-index: 2;
+            background: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+        }
+        .step.active {
+            background: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+        .step.completed {
+            background: #198754;
+            color: white;
+            border-color: #198754;
+        }
+        .step-label {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .info-icon {
+            color: #0d6efd;
+            cursor: help;
+        }
+        .toggle-password {
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #6c757d;
+        }
+        .toggle-password:hover {
+            color: #0d6efd;
+        }
+    </style>
 </head>
-<body class="modo-login">
+<body>
 
-    <div class="card login-card bg-white">
-        <div class="card-body">
-            <h3 class="text-center mb-4" style="color: #2C3E50; font-weight: bold;">Crear Cuenta</h3>
-            
+    <div class="register-card bg-white">
+        <!-- ENCABEZADO -->
+        <div class="card-header-gradient">
+            <h2 class="mb-2">
+                <i class="fas fa-user-plus me-2"></i>Crear Cuenta
+            </h2>
+            <p class="mb-0 opacity-75">Únete a nuestra comunidad de consultores y clientes</p>
+        </div>
+
+        <!-- INDICADOR DE PASOS -->
+        <div class="px-4 pt-4">
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    1
+                    <div class="step-label">Información</div>
+                </div>
+                <div class="step" id="step2">
+                    2
+                    <div class="step-label">Perfil</div>
+                </div>
+                <div class="step" id="step3">
+                    3
+                    <div class="step-label">Confirmar</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENSAJES FLASH -->
+        <div class="px-4">
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                    <div class="alert alert-warning">{{ messages[0] }}</div>
+                    <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>{{ messages[0] }}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 {% endif %}
             {% endwith %}
+        </div>
 
-            <form method="POST" action="/registro">
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Quiero registrarme como:</label>
-                    <select name="rol" id="selector-rol" class="form-select" onchange="mostrarCamposExtra()">
-                        <option value="cliente">Cliente</option>
-                        <option value="consultor">Consultor</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Nombre Completo</label>
-                    <input type="text" name="nombre" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Correo Electrónico</label>
-                    <input type="email" name="email" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Usuario</label>
-                    <input type="text" name="username" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-
-                <div id="campos-consultor" style="display: none; background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-                    <h6 class="text-primary fw-bold">Perfil Profesional</h6>
-                    <div class="mb-2">
-                        <label class="form-label small">Especialidad (Ej: Ciberseguridad)</label>
-                        <input type="text" name="especialidad" class="form-control form-control-sm">
+        <!-- FORMULARIO -->
+        <div class="card-body p-4">
+            <form method="POST" action="/registro" id="registerForm">
+                <!-- SECCIÓN 1: TIPO DE USUARIO -->
+                <div class="form-section">
+                    <h5 class="fw-bold mb-3 text-primary">
+                        <i class="fas fa-users me-2"></i>1. Tipo de Usuario
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            Quiero registrarme como:
+                            <i class="fas fa-info-circle info-icon ms-1" 
+                               data-bs-toggle="tooltip" 
+                               data-bs-placement="top"
+                               title="Selecciona 'Cliente' si buscas servicios de consultoría. Selecciona 'Consultor' si ofreces servicios profesionales."></i>
+                        </label>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card role-card h-100 border {{ 'border-primary shadow-sm' if request.form.get('rol') != 'consultor' else '' }}" 
+                                     onclick="selectRole('cliente')"
+                                     style="cursor: pointer; transition: all 0.3s;">
+                                    <div class="card-body text-center">
+                                        <div class="mb-3">
+                                            <i class="fas fa-user fa-3x text-primary"></i>
+                                        </div>
+                                        <h5 class="card-title">Cliente</h5>
+                                        <p class="card-text small text-muted">
+                                            Buscas servicios de consultoría profesional
+                                        </p>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="rol" 
+                                                   id="rol_cliente" value="cliente" 
+                                                   {{ 'checked' if request.form.get('rol') != 'consultor' else '' }}
+                                                   onchange="mostrarCamposConsultor()">
+                                            <label class="form-check-label fw-bold" for="rol_cliente">
+                                                Seleccionar
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card role-card h-100 border {{ 'border-success shadow-sm' if request.form.get('rol') == 'consultor' else '' }}" 
+                                     onclick="selectRole('consultor')"
+                                     style="cursor: pointer; transition: all 0.3s;">
+                                    <div class="card-body text-center">
+                                        <div class="mb-3">
+                                            <i class="fas fa-user-tie fa-3x text-success"></i>
+                                        </div>
+                                        <h5 class="card-title">Consultor</h5>
+                                        <p class="card-text small text-muted">
+                                            Ofreces servicios profesionales de consultoría
+                                        </p>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="rol" 
+                                                   id="rol_consultor" value="consultor"
+                                                   {{ 'checked' if request.form.get('rol') == 'consultor' else '' }}
+                                                   onchange="mostrarCamposConsultor()">
+                                            <label class="form-check-label fw-bold" for="rol_consultor">
+                                                Seleccionar
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label small">Tarifa por Hora ($)</label>
-                        <input type="number" name="tarifa" class="form-control form-control-sm" value="0">
+                </div>
+
+                <!-- SECCIÓN 2: INFORMACIÓN PERSONAL -->
+                <div class="form-section">
+                    <h5 class="fw-bold mb-3 text-primary">
+                        <i class="fas fa-id-card me-2"></i>2. Información Personal
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">
+                                Nombre Completo
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" name="nombre" class="form-control" 
+                                       placeholder="Ej: Juan Pérez González" 
+                                       value="{{ request.form.get('nombre', '') }}" 
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Correo Electrónico
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" name="email" class="form-control" 
+                                       placeholder="ejemplo@correo.com" 
+                                       value="{{ request.form.get('email', '') }}" 
+                                       required>
+                            </div>
+                            <small class="form-text text-muted">Utilizaremos este email para notificaciones.</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Nombre de Usuario
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-at"></i>
+                                </span>
+                                <input type="text" name="username" class="form-control" 
+                                       placeholder="juan_perez" 
+                                       value="{{ request.form.get('username', '') }}" 
+                                       required>
+                            </div>
+                            <small class="form-text text-muted">Mínimo 4 caracteres, sin espacios.</small>
+                        </div>
                     </div>
                 </div>
-                
-                <button type="submit" class="boton-principal">REGISTRARME</button>
+
+                <!-- SECCIÓN 3: CONTRASEÑA -->
+                <div class="form-section">
+                    <h5 class="fw-bold mb-3 text-primary">
+                        <i class="fas fa-lock me-2"></i>3. Seguridad
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Contraseña
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-key"></i>
+                                </span>
+                                <input type="password" name="password" id="password" 
+                                       class="form-control" placeholder="••••••••" 
+                                       required minlength="4">
+                                <button class="btn toggle-password" type="button" 
+                                        onclick="togglePassword('password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" id="password-strength" 
+                                         style="width: 0%;"></div>
+                                </div>
+                                <small class="form-text text-muted" id="password-feedback">
+                                    La contraseña debe tener al menos 4 caracteres.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Confirmar Contraseña
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-key"></i>
+                                </span>
+                                <input type="password" id="confirm_password" 
+                                       class="form-control" placeholder="••••••••" 
+                                       required>
+                                <button class="btn toggle-password" type="button" 
+                                        onclick="togglePassword('confirm_password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="form-text text-muted" id="confirm-feedback"></small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 4: PERFIL PROFESIONAL (SOLO CONSULTORES) -->
+                <div id="campos-consultor" class="form-section form-section-consultor" style="display: none;">
+                    <h5 class="fw-bold mb-3 text-success">
+                        <i class="fas fa-briefcase me-2"></i>4. Perfil Profesional
+                        <span class="badge bg-success ms-2">Consultor</span>
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Especialidad Principal
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-star"></i>
+                                </span>
+                                <input type="text" name="especialidad" class="form-control" 
+                                       placeholder="Ej: Ciberseguridad, Finanzas, Marketing Digital" 
+                                       value="{{ request.form.get('especialidad', '') }}">
+                            </div>
+                            <small class="form-text text-muted">Tu área de expertise principal.</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Años de Experiencia
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </span>
+                                <input type="number" name="experiencia_años" class="form-control" 
+                                       min="0" max="50" value="{{ request.form.get('experiencia_años', '0') }}" 
+                                       required>
+                                <span class="input-group-text">años</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">
+                                Descripción de Servicios
+                                <span class="text-danger">*</span>
+                                <i class="fas fa-info-circle info-icon ms-1" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top"
+                                   title="Esta descripción será visible para los clientes cuando seleccionen un consultor."></i>
+                            </label>
+                            <textarea name="descripcion" class="form-control" rows="3" 
+                                      placeholder="Describa brevemente sus servicios, metodología, enfoque profesional, certificaciones relevantes..." 
+                                      required>{{ request.form.get('descripcion', '') }}</textarea>
+                            <small class="form-text text-muted">
+                                Máximo 500 caracteres. <span id="char-count">0/500</span>
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="primera_cita_descuento" id="check_descuento" 
+                                               value="true" 
+                                               {{ 'checked' if request.form.get('primera_cita_descuento') == 'true' else '' }}
+                                               onchange="toggleDescuento()">
+                                        <label class="form-check-label fw-bold" for="check_descuento">
+                                            <i class="fas fa-gift me-1 text-success"></i>
+                                            Ofrecer descuento en primera cita
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mb-3">
+                                        Atrae más clientes ofreciendo un descuento especial en su primera sesión.
+                                    </small>
+                                    
+                                    <div id="campo_porcentaje" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">
+                                                    Porcentaje de Descuento
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="number" name="porcentaje_descuento" 
+                                                           class="form-control" min="0" max="100" 
+                                                           step="0.5" value="{{ request.form.get('porcentaje_descuento', '15') }}">
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="alert alert-success mt-4 mb-0">
+                                                    <small>
+                                                        <i class="fas fa-lightbulb me-1"></i>
+                                                        <strong>Recomendación:</strong> 10-20% es un buen descuento para atraer nuevos clientes.
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Tarifa por Hora (USD)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </span>
+                                <input type="number" name="tarifa" class="form-control" 
+                                       min="0" step="0.01" 
+                                       value="{{ request.form.get('tarifa', '50') }}" 
+                                       required>
+                                <span class="input-group-text">.00</span>
+                            </div>
+                            <small class="form-text text-muted">Tu tarifa estándar por hora de consultoría.</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                Tarifa Calculada
+                            </label>
+                            <div class="card bg-light">
+                                <div class="card-body p-3">
+                                    <div class="text-center">
+                                        <div class="h4 mb-1" id="tarifa-calculada">$50.00</div>
+                                        <div class="small text-muted" id="tarifa-con-descuento"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 5: TÉRMINOS Y CONDICIONES -->
+                <div class="form-section mt-4">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="terminos" required>
+                        <label class="form-check-label" for="terminos">
+                            Acepto los 
+                            <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#terminosModal">
+                                Términos y Condiciones
+                            </a>
+                            y la 
+                            <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#privacidadModal">
+                                Política de Privacidad
+                            </a>
+                            <span class="text-danger">*</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Login
+                    </a>
+                    <button type="submit" class="btn btn-register px-5" id="submitBtn">
+                        <i class="fas fa-user-plus me-2"></i>REGISTRARME
+                    </button>
+                </div>
             </form>
-            
-            <div class="text-center mt-3">
-                <a href="{{ url_for('login') }}" class="text-secondary small">¿Ya tienes cuenta? Iniciar Sesión</a>
+        </div>
+    </div>
+
+    <!-- MODAL TÉRMINOS Y CONDICIONES -->
+    <div class="modal fade" id="terminosModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Términos y Condiciones</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Última actualización: Enero 2024</strong></p>
+                    <p>Al registrarte en Consultores S.A.S, aceptas los siguientes términos:</p>
+                    <ol>
+                        <li>Eres responsable de la veracidad de la información proporcionada.</li>
+                        <li>Las citas canceladas con menos de 24 horas de anticipación podrían tener penalizaciones.</li>
+                        <li>Los consultores son responsables de la calidad de sus servicios.</li>
+                        <li>Nos reservamos el derecho de suspender cuentas que violen nuestras políticas.</li>
+                        <li>Los precios están en USD y pueden estar sujetos a cambios.</li>
+                    </ol>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL POLÍTICA DE PRIVACIDAD -->
+    <div class="modal fade" id="privacidadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Política de Privacidad</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>En Consultores S.A.S protegemos tu privacidad:</p>
+                    <ul>
+                        <li>Tu información personal se usa únicamente para gestionar citas y mejorar el servicio.</li>
+                        <li>No compartimos tus datos con terceros sin tu consentimiento.</li>
+                        <li>Implementamos medidas de seguridad para proteger tu información.</li>
+                        <li>Puedes solicitar la eliminación de tu cuenta en cualquier momento.</li>
+                        <li>Usamos cookies para mejorar la experiencia de usuario.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function mostrarCamposExtra() {
-            var rol = document.getElementById("selector-rol").value;
-            var campos = document.getElementById("campos-consultor");
+        // Inicializar tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
             
-            if (rol === "consultor") {
-                campos.style.display = "block";
+            // Actualizar paso activo
+            updateSteps();
+        });
+
+        // Función para seleccionar rol con estilo
+        function selectRole(role) {
+            const clienteCard = document.querySelector('.role-card:first-child');
+            const consultorCard = document.querySelector('.role-card:last-child');
+            const clienteRadio = document.getElementById('rol_cliente');
+            const consultorRadio = document.getElementById('rol_consultor');
+            
+            if (role === 'cliente') {
+                clienteCard.classList.add('border-primary', 'shadow-sm');
+                consultorCard.classList.remove('border-success', 'shadow-sm');
+                clienteRadio.checked = true;
+                mostrarCamposConsultor();
             } else {
-                campos.style.display = "none";
+                consultorCard.classList.add('border-success', 'shadow-sm');
+                clienteCard.classList.remove('border-primary', 'shadow-sm');
+                consultorRadio.checked = true;
+                mostrarCamposConsultor();
+            }
+            updateSteps();
+        }
+
+        // Función para mostrar/ocultar campos de consultor
+        function mostrarCamposExtra() {
+            const rol = document.querySelector('input[name="rol"]:checked').value;
+            const campos = document.getElementById('campos-consultor');
+            
+            if (rol === 'consultor') {
+                campos.style.display = 'block';
+                document.getElementById('step2').classList.add('active');
+                toggleDescuento(); // Inicializar campo de descuento
+                calcularTarifa(); // Calcular tarifa inicial
+            } else {
+                campos.style.display = 'none';
+                document.getElementById('step2').classList.remove('active');
+            }
+            updateSteps();
+        }
+
+        // Alias para compatibilidad
+        function mostrarCamposConsultor() {
+            mostrarCamposExtra();
+        }
+
+        // Función para mostrar/ocultar campo de porcentaje
+        function toggleDescuento() {
+            const check = document.getElementById('check_descuento');
+            const campo = document.getElementById('campo_porcentaje');
+            campo.style.display = check.checked ? 'block' : 'none';
+            calcularTarifa();
+        }
+
+        // Función para calcular tarifa con descuento
+        function calcularTarifa() {
+            const tarifaInput = document.querySelector('input[name="tarifa"]');
+            const descuentoCheck = document.getElementById('check_descuento');
+            const porcentajeInput = document.querySelector('input[name="porcentaje_descuento"]');
+            
+            if (!tarifaInput) return;
+            
+            let tarifa = parseFloat(tarifaInput.value) || 0;
+            let tarifaCalculada = tarifa;
+            let descuentoText = '';
+            
+            if (descuentoCheck.checked) {
+                let porcentaje = parseFloat(porcentajeInput.value) || 0;
+                if (porcentaje > 0 && porcentaje <= 100) {
+                    let descuento = (porcentaje / 100) * tarifa;
+                    tarifaCalculada = tarifa - descuento;
+                    descuentoText = `Con descuento: $${tarifaCalculada.toFixed(2)} (${porcentaje}% off)`;
+                }
+            }
+            
+            document.getElementById('tarifa-calculada').textContent = `$${tarifa.toFixed(2)}`;
+            document.getElementById('tarifa-con-descuento').textContent = descuentoText;
+        }
+
+        // Función para contar caracteres en descripción
+        document.querySelector('textarea[name="descripcion"]')?.addEventListener('input', function() {
+            const count = this.value.length;
+            const charCount = document.getElementById('char-count');
+            charCount.textContent = `${count}/500`;
+            
+            if (count > 500) {
+                charCount.className = 'text-danger';
+                this.value = this.value.substring(0, 500);
+            } else if (count > 450) {
+                charCount.className = 'text-warning';
+            } else {
+                charCount.className = 'text-success';
+            }
+        });
+
+        // Función para mostrar/ocultar contraseña
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.parentNode.querySelector('.fa-eye');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         }
-    </script>
 
+        // Validación de fortaleza de contraseña
+        document.getElementById('password')?.addEventListener('input', function() {
+            const password = this.value;
+            const progress = document.getElementById('password-strength');
+            const feedback = document.getElementById('password-feedback');
+            
+            let strength = 0;
+            let message = '';
+            let color = 'danger';
+            
+            if (password.length >= 4) strength += 25;
+            if (password.length >= 8) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+            
+            if (strength < 25) {
+                message = 'Muy débil';
+                color = 'danger';
+            } else if (strength < 50) {
+                message = 'Débil';
+                color = 'warning';
+            } else if (strength < 75) {
+                message = 'Buena';
+                color = 'info';
+            } else {
+                message = 'Excelente';
+                color = 'success';
+            }
+            
+            progress.style.width = strength + '%';
+            progress.className = `progress-bar bg-${color}`;
+            feedback.textContent = message;
+            
+            // Validar confirmación
+            validatePasswordConfirmation();
+        });
+
+        // Validar confirmación de contraseña
+        document.getElementById('confirm_password')?.addEventListener('input', validatePasswordConfirmation);
+        
+        function validatePasswordConfirmation() {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const feedback = document.getElementById('confirm-feedback');
+            
+            if (confirm === '') {
+                feedback.textContent = '';
+                feedback.className = 'form-text text-muted';
+            } else if (password === confirm) {
+                feedback.textContent = '✓ Las contraseñas coinciden';
+                feedback.className = 'form-text text-success';
+            } else {
+                feedback.textContent = '✗ Las contraseñas no coinciden';
+                feedback.className = 'form-text text-danger';
+            }
+        }
+
+        // Actualizar indicador de pasos
+        function updateSteps() {
+            const rol = document.querySelector('input[name="rol"]:checked');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            
+            if (rol && rol.value === 'consultor') {
+                step2.classList.add('active');
+                step3.classList.remove('active');
+            } else {
+                step2.classList.remove('active');
+                step3.classList.add('active');
+            }
+        }
+
+        // Event listeners para campos que afectan el cálculo de tarifa
+        document.querySelector('input[name="tarifa"]')?.addEventListener('input', calcularTarifa);
+        document.querySelector('input[name="porcentaje_descuento"]')?.addEventListener('input', calcularTarifa);
+
+        // Validación del formulario antes de enviar
+        document.getElementById('registerForm')?.addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const terminos = document.getElementById('terminos').checked;
+            
+            if (!terminos) {
+                e.preventDefault();
+                alert('Debes aceptar los Términos y Condiciones para registrarte.');
+                return;
+            }
+            
+            if (password !== confirm) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden. Por favor verifica.');
+                return;
+            }
+            
+            const rolConsultor = document.getElementById('rol_consultor').checked;
+            if (rolConsultor) {
+                const descripcion = document.querySelector('textarea[name="descripcion"]').value;
+                const especialidad = document.querySelector('input[name="especialidad"]').value;
+                
+                if (descripcion.trim().length < 10) {
+                    e.preventDefault();
+                    alert('Por favor proporciona una descripción más detallada de tus servicios (mínimo 10 caracteres).');
+                    return;
+                }
+                
+                if (!especialidad.trim()) {
+                    e.preventDefault();
+                    alert('Por favor especifica tu especialidad principal.');
+                    return;
+                }
+            }
+            
+            // Mostrar loader en botón
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Registrando...';
+            submitBtn.disabled = true;
+        });
+
+        // Inicializar campos si hay valores previamente ingresados
+        window.onload = function() {
+            const rolConsultor = document.getElementById('rol_consultor');
+            if (rolConsultor.checked) {
+                mostrarCamposConsultor();
+            }
+            
+            // Inicializar calculadora de tarifa
+            calcularTarifa();
+            
+            // Inicializar contador de caracteres
+            const descripcion = document.querySelector('textarea[name="descripcion"]');
+            if (descripcion) {
+                const event = new Event('input');
+                descripcion.dispatchEvent(event);
+            }
+        };
+    </script>
 </body>
 </html>
