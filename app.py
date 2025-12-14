@@ -72,6 +72,10 @@ def dashboard():
     
     consultores = db.get_consultores_disponibles()
     ganancias = 0  # Variable nueva para el dinero
+
+    if rol == 'admin':
+        stats = db.obtener_estadisticas_admin()
+        return render_template('dashboard.html', usuario=usuario, rol=rol, stats=stats, reservas=[])
     
     if rol == 'cliente':
         reservas = db.get_reservas_cliente(usuario)

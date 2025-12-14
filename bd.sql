@@ -91,3 +91,9 @@ DO UPDATE SET tarifa = 300.0, especialidad = 'Ciberseguridad'; -- Si ya existe, 
 
 
 ALTER TABLE reservas DROP CONSTRAINT IF EXISTS reservas_fecha_check;
+
+-- 1. Agregamos columna para saber cuánto costó realmente (con descuento)
+ALTER TABLE reservas ADD COLUMN costo_final DECIMAL(10, 2) DEFAULT 0;
+
+-- 2. Agregamos columna para que el cliente califique (1 a 5)
+ALTER TABLE reservas ADD COLUMN calificacion INTEGER DEFAULT 0;
