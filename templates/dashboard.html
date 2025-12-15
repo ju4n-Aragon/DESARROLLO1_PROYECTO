@@ -2,64 +2,87 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Principal - Consultores SAS</title>
+    <title>Panel Principal - Consultores S.A.S</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    
     <style>
+        /* ESTILOS PREMIUM */
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+        .card-header-gradient { background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%); color: white; }
+        
         .info-box { 
             background-color: #e3f2fd; 
             border-left: 5px solid #2196f3; 
             padding: 15px; 
-            margin-top: 15px; 
+            margin-bottom: 15px;
             border-radius: 4px; 
-            display: none; /* Se oculta por defecto */
+            display: none; 
+            animation: fadeIn 0.5s ease;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .discount-badge { 
-            background-color: #ff9800; 
-            color: white; 
-            padding: 5px 10px; 
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            color: #333; 
+            padding: 5px 12px; 
             border-radius: 20px; 
             font-weight: bold; 
-            font-size: 0.9em; 
+            font-size: 0.85em;
         }
-        .card-custom { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        #seccion-pago {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none; /* Se oculta hasta seleccionar consultor */
+        }
     </style>
 </head>
 
 <body class="{{ 'modo-cliente' if rol == 'cliente' else 'modo-dashboard' }}">
 
-    <nav class="navbar navbar-dark bg-dark px-4">
-        <span class="navbar-brand mb-0 h1">Sistema de Gestión</span>
-        <div class="d-flex align-items-center">
-            <span class="text-white me-3">
-                Hola, {{ usuario }} <span class="badge bg-info text-dark ms-2">{{ rol|upper }}</span>
+    <nav class="navbar navbar-dark bg-dark px-4 py-3 shadow">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1 d-flex align-items-center">
+                <i class="fas fa-briefcase me-2"></i> Sistema de Gestión
             </span>
-            <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            <div class="d-flex align-items-center">
+                <div class="me-4 text-white text-end d-none d-md-block">
+                    <div class="fw-bold">{{ usuario }}</div>
+                    <div>
+                        <span class="badge {{ 'bg-info' if rol=='cliente' else 'bg-warning text-dark' }}">
+                            {{ rol|upper }}
+                        </span>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i> Salir
+                </a>
+            </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
+    <div class="container-fluid mt-4 px-4">
         
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-info alert-dismissible fade show">
-                    {{ messages[0] }}
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> {{ messages[0] }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endif %}
         {% endwith %}
 
         {% if rol == 'admin' %}
-        <div class="row mb-5">
-            <div class="col-12 text-center mb-4">
-                <h2 class="display-6 fw-bold text-dark">📊 Panel de Control Corporativo</h2>
-                <p class="text-muted">Estadísticas en tiempo real para la toma de decisiones.</p>
+        <div class="row mb-5 g-4">
+            <div class="col-12 text-center mb-2">
+                <h2 class="fw-bold text-dark">📊 Panel Corporativo</h2>
             </div>
             <div class="col-md-4">
-                <div class="card text-white bg-success mb-3 shadow h-100">
-                    <div class="card-header bg-success border-bottom border-light">KPI: Finanzas</div>
+                <div class="card text-white bg-success h-100 shadow card-hover">
                     <div class="card-body text-center">
                         <h5 class="card-title">Ingresos Totales</h5>
                         <h1 class="display-4 fw-bold">${{ stats.ingresos_totales }}</h1>
@@ -67,8 +90,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-white bg-primary mb-3 shadow h-100">
-                    <div class="card-header bg-primary border-bottom border-light">KPI: Crecimiento</div>
+                <div class="card text-white bg-primary h-100 shadow card-hover">
                     <div class="card-body text-center">
                         <h5 class="card-title">Usuarios Activos</h5>
                         <h1 class="display-4 fw-bold">{{ stats.total_usuarios }}</h1>
@@ -76,8 +98,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-white bg-warning mb-3 shadow h-100">
-                    <div class="card-header bg-warning border-bottom border-dark text-dark">KPI: Rendimiento</div>
+                <div class="card text-white bg-warning h-100 shadow card-hover">
                     <div class="card-body text-center text-dark">
                         <h5 class="card-title">Consultor Estrella 🏆</h5>
                         <h3 class="fw-bold mt-3">{{ stats.consultor_top }}</h3>
@@ -88,114 +109,110 @@
         {% endif %}
 
         {% if rol != 'admin' %}
-
             {% if rol == 'consultor' %}
             <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card bg-success text-white shadow">
-                        <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="col-12">
+                    <div class="card text-white shadow border-0 card-hover" 
+                         style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <div class="card-body d-flex justify-content-between align-items-center py-4">
                             <div>
-                                <h5 class="card-title mb-0">💰 Mis Ganancias Totales</h5>
-                                <small>Suma de pagos liberados por clientes satisfechos</small>
+                                <h3 class="m-0"><i class="fas fa-chart-line me-2"></i>Mis Ganancias</h3>
+                                <small class="opacity-75">Ingresos por citas completadas</small>
                             </div>
-                            <h2 class="mb-0 fw-bold">${{ ganancias }} USD</h2>
+                            <h2 class="mb-0 fw-bold display-6">${{ ganancias }} USD</h2>
                         </div>
                     </div>
                 </div>
             </div>
             {% endif %}
 
-            <div class="row">
-                <div class="{{ 'col-md-7' if rol == 'cliente' else 'col-md-12' }}">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-white">
-                            <h4 class="mb-0 text-primary">
-                                {{ '📅 Mis Reservas y Pagos' if rol == 'cliente' else '💼 Gestión de Agenda' }}
+            <div class="row g-4">
+                <div class="{{ 'col-lg-7' if rol == 'cliente' else 'col-12' }}">
+                    <div class="card shadow-sm border-0 card-hover h-100">
+                        <div class="card-header card-header-gradient">
+                            <h4 class="mb-0">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                {{ 'Mis Reservas' if rol == 'cliente' else 'Gestión de Agenda' }}
                             </h4>
                         </div>
-                        <div class="card-body table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>{{ 'Consultor' if rol == 'cliente' else 'Cliente' }}</th>
-                                        <th>Fecha</th>
-                                        <th>Estado / Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for res in reservas %}
-                                    <tr>
-                                        <td>{{ res[0] }}</td>
-                                        <td>
-                                            <strong>{{ res[1] }}</strong><br>
-                                            <small class="text-muted">{{ res[4] }}</small>
-                                        </td>
-                                        <td>{{ res[2] }}</td>
-                                        <td>
-                                            {% if rol == 'cliente' and res[3] == 'Activa' %}
-                                                <form action="{{ url_for('gestionar_cita') }}" method="POST" class="d-flex flex-column gap-2">
-                                                    <input type="hidden" name="id_reserva" value="{{ res[0] }}">
-                                                    
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="text" name="notas" class="form-control" placeholder="Calificación (1-5)" required>
-                                                        <button type="submit" name="accion" value="completar" class="btn btn-success fw-bold">✔ PAGAR</button>
-                                                    </div>
-                                                    <button type="submit" name="accion" value="cancelar" class="btn btn-link text-danger btn-sm text-decoration-none p-0 align-self-start">Cancelar Cita</button>
-                                                </form>
-
-                                            {% elif rol == 'consultor' and res[3] == 'Activa' %}
-                                                <div class="d-flex flex-column gap-2">
-                                                    <span class="badge bg-warning text-dark border border-dark">⏳ Pendiente de Cliente</span>
-                                                    
-                                                    <form action="{{ url_for('gestionar_cita') }}" method="POST">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">ID</th>
+                                            <th>{{ 'Consultor' if rol == 'cliente' else 'Cliente' }}</th>
+                                            <th>Fecha</th>
+                                            <th>Estado / Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for res in reservas %}
+                                        <tr>
+                                            <td class="ps-4">{{ res[0] }}</td>
+                                            <td>
+                                                <strong>{{ res[1] }}</strong><br>
+                                                <small class="text-muted">{{ res[4] }}</small>
+                                            </td>
+                                            <td>{{ res[2] }}</td>
+                                            <td>
+                                                {% if rol == 'cliente' and res[3] == 'Activa' %}
+                                                    <form action="{{ url_for('gestionar_cita') }}" method="POST" class="d-flex flex-column gap-2">
                                                         <input type="hidden" name="id_reserva" value="{{ res[0] }}">
-                                                        <input type="hidden" name="notas" value="Cancelado por el Consultor">
-                                                        <button type="submit" name="accion" value="cancelar" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('¿Seguro que no puedes asistir? Se cancelará la cita.');">
-                                                            ❌ No puedo asistir
-                                                        </button>
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="number" name="notas" class="form-control" placeholder="Calif (1-5)" min="1" max="5" required>
+                                                            <button type="submit" name="accion" value="completar" class="btn btn-success fw-bold">✔ PAGAR</button>
+                                                        </div>
+                                                        <button type="submit" name="accion" value="cancelar" class="btn btn-link text-danger btn-sm text-decoration-none p-0 align-self-start">Cancelar Cita</button>
                                                     </form>
-                                                </div>
-
-                                            {% else %}
-                                                {% if res[3] == 'Cancelada' %}
-                                                    <span class="badge bg-danger">Cancelada</span>
+                                                {% elif rol == 'consultor' and res[3] == 'Activa' %}
+                                                    <div class="d-flex flex-column gap-2">
+                                                        <span class="badge bg-warning text-dark border border-dark">⏳ Pendiente</span>
+                                                        <form action="{{ url_for('gestionar_cita') }}" method="POST">
+                                                            <input type="hidden" name="id_reserva" value="{{ res[0] }}">
+                                                            <input type="hidden" name="notas" value="Cancelado por Consultor">
+                                                            <button type="submit" name="accion" value="cancelar" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('¿Cancelar cita?');">❌ Cancelar</button>
+                                                        </form>
+                                                    </div>
                                                 {% else %}
-                                                    <span class="badge bg-success">💰 Completada</span>
-                                                    <br><small>Pago: ${{ res[6] }}</small>
+                                                    {% if res[3] == 'Cancelada' %}
+                                                        <span class="badge bg-danger">Cancelada</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">💰 Completada</span>
+                                                        <br><small>Pago: ${{ res[6] }}</small>
+                                                    {% endif %}
                                                 {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% else %}
-                                    <tr><td colspan="4" class="text-center text-muted">No hay registros aún.</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr><td colspan="4" class="text-center text-muted py-5">No hay reservas aún.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {% if rol == 'cliente' %}
-                <div class="col-md-5">
-                    <div class="card shadow-sm border-0">
+                <div class="col-lg-5">
+                    <div class="card shadow-sm border-0 card-hover">
                         <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0">💳 Reservar y Pagar</h4>
+                            <h4 class="mb-0"><i class="fas fa-credit-card me-2"></i>Reservar y Pagar</h4>
                         </div>
                         <div class="card-body">
                             
-                            <div class="alert alert-warning text-center" id="box-oferta">
-                                <strong>¡SELECCIONA UN EXPERTO!</strong><br>
-                                Para ver sus descuentos exclusivos.
+                            <div class="alert alert-warning text-center shadow-sm" id="box-oferta">
+                                <i class="fas fa-tag me-2"></i><strong>¡SELECCIONA UN EXPERTO!</strong><br>
+                                Descubre descuentos exclusivos.
                             </div>
 
-                            <form action="{{ url_for('crear_cita') }}" method="POST">
+                            <form action="{{ url_for('crear_cita') }}" method="POST" id="form-reserva">
                                 
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">1. Elige al Experto:</label>
-                                    <select class="form-select" name="consultor" id="select-consultor" required onchange="actualizarInfo()">
+                                    <select class="form-select form-select-lg" name="consultor" id="select-consultor" required onchange="actualizarInfo()">
                                         <option value="" selected disabled>-- Seleccionar --</option>
-                                        
                                         {% for c in consultores %}
                                         <option value="{{ c.nombre }}" 
                                                 data-tarifa="{{ c.tarifa }}"
@@ -209,16 +226,18 @@
                                     </select>
                                 </div>
 
-                                <div id="info-experto" class="info-box mb-3">
-                                    <h6 class="fw-bold" id="info-nombre">Nombre</h6>
-                                    <p class="mb-1 small text-muted" id="info-desc">...</p>
-                                    <p class="mb-2 small"><strong>Experiencia:</strong> <span id="info-exp">0</span> años.</p>
-                                    <hr class="my-2">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted text-decoration-line-through small" id="info-precio-base">$0.00</span>
+                                <div id="info-experto" class="info-box">
+                                    <h5 class="fw-bold text-primary mb-1" id="info-nombre">Nombre</h5>
+                                    <p class="mb-2 small text-muted fst-italic" id="info-desc">...</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-light text-dark border">Exp: <span id="info-exp">0</span> años</span>
                                         <span class="discount-badge" id="info-badge">0% OFF</span>
                                     </div>
-                                    <h4 class="text-primary text-end mt-2 m-0" id="info-total">Total: $0.00</h4>
+                                    <hr class="my-2">
+                                    <div class="d-flex justify-content-between align-items-end">
+                                        <div class="text-muted text-decoration-line-through small" id="info-precio-base">$0.00</div>
+                                        <h3 class="text-success fw-bold m-0" id="info-total">$0.00</h3>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -226,21 +245,28 @@
                                     <input type="datetime-local" name="fecha" class="form-control" required>
                                 </div>
 
-                                <hr>
-                                <h6 class="text-primary mb-3">Datos de Pago (Simulación Segura)</h6>
-                                <div class="mb-3">
-                                    <input type="text" class="form-control" placeholder="Número de Tarjeta (0000...)" required>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col">
-                                        <input type="text" class="form-control" placeholder="MM/AA" required>
+                                <div id="seccion-pago">
+                                    <h6 class="text-primary fw-bold mb-3"><i class="fas fa-lock me-2"></i>Pago Seguro (Simulación)</h6>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label small">Número de Tarjeta</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="fas fa-credit-card text-muted"></i></span>
+                                            <input type="text" class="form-control" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                                        </div>
                                     </div>
-                                    <div class="col">
-                                        <input type="password" class="form-control" placeholder="CVC" required>
+                                    
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <input type="text" class="form-control" id="card-expiry" placeholder="MM/AA" required>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="password" class="form-control" id="card-cvc" placeholder="CVC" maxlength="3" required>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-dark w-100 py-2 fw-bold">
+                                <button type="submit" class="btn btn-dark w-100 py-3 fw-bold mt-2 shadow-sm" id="btn-submit">
                                     🔒 CONFIRMAR RESERVA
                                 </button>
                             </form>
@@ -253,45 +279,63 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
+        // LÓGICA DE ACTUALIZACIÓN DINÁMICA
         function actualizarInfo() {
             const select = document.getElementById('select-consultor');
             const option = select.options[select.selectedIndex];
-            if (!option.value) return;
+            
+            // Si no hay selección, ocultar todo
+            if (!option.value) {
+                document.getElementById('info-experto').style.display = 'none';
+                document.getElementById('seccion-pago').style.display = 'none';
+                return;
+            }
 
-            // Leer datos del HTML (data-attributes)
+            // 1. Leer datos del HTML
             const descripcion = option.getAttribute('data-desc');
             const experiencia = option.getAttribute('data-exp');
             const tarifaBase = option.getAttribute('data-tarifa');
             const descuentoTxt = option.getAttribute('data-descuento-txt');
             const precioFinal = option.getAttribute('data-precio-final');
 
-            // Mostrar caja azul con info
+            // 2. Mostrar Caja Azul (Info Experto)
             document.getElementById('info-experto').style.display = 'block';
             document.getElementById('info-nombre').innerText = option.text;
             document.getElementById('info-desc').innerText = descripcion;
             document.getElementById('info-exp').innerText = experiencia;
             document.getElementById('info-precio-base').innerText = "$" + tarifaBase;
-            document.getElementById('info-total').innerText = "Total a Pagar: $" + precioFinal;
+            document.getElementById('info-total').innerText = "$" + precioFinal;
 
-            // Actualizar Badge y Alerta de Oferta
+            // 3. Manejar Badge de Descuento
             const badge = document.getElementById('info-badge');
             const boxOferta = document.getElementById('box-oferta');
 
             if (descuentoTxt && descuentoTxt !== "0%") {
                 badge.style.display = 'inline-block';
                 badge.innerText = descuentoTxt;
-                boxOferta.classList.remove('alert-warning', 'alert-secondary');
-                boxOferta.classList.add('alert-success');
-                boxOferta.innerHTML = `<strong>¡OFERTA APLICADA!</strong><br>Descuento del ${descuentoTxt} disponible.`;
+                boxOferta.className = 'alert alert-success text-center shadow-sm';
+                boxOferta.innerHTML = `<strong>¡OFERTA APLICADA!</strong><br>Aprovecha el ${descuentoTxt} de descuento.`;
             } else {
                 badge.style.display = 'none';
-                boxOferta.classList.remove('alert-success', 'alert-warning');
-                boxOferta.classList.add('alert-secondary');
-                boxOferta.innerHTML = `<strong>PRECIO ESTÁNDAR</strong><br>Sin descuentos disponibles para este experto.`;
+                boxOferta.className = 'alert alert-secondary text-center shadow-sm';
+                boxOferta.innerHTML = `<strong>PRECIO ESTÁNDAR</strong><br>Sin descuentos disponibles.`;
             }
+
+            // 4. Mostrar Formulario de Pago
+            document.getElementById('seccion-pago').style.display = 'block';
+            document.getElementById('btn-submit').innerText = `🔒 PAGAR $${precioFinal} Y RESERVAR`;
         }
+        
+        // Validación básica antes de enviar (Para que no envíen vacío)
+        document.getElementById('form-reserva')?.addEventListener('submit', function(e) {
+            const card = document.getElementById('card-number');
+            if(card && card.value.length < 5) {
+                e.preventDefault();
+                alert("Por favor ingresa los datos de la tarjeta.");
+                card.focus();
+            }
+        });
     </script>
 </body>
 </html>

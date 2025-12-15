@@ -1,5 +1,5 @@
 import psycopg2
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class SistemaBackend:
     def __init__(self):
@@ -7,11 +7,11 @@ class SistemaBackend:
             self.conn = psycopg2.connect(
                 dbname="consultores_db",
                 user="postgres",
-                password="1234",  # <--- ASEGÚRATE DE QUE SEA LA CONTRASEÑA CORRECTA
+                password="1234",  
                 host="localhost",
                 port="5432"
             )
-            # USAMOS TU LÓGICA: Autocommit False para seguridad transaccional
+            
             self.conn.autocommit = False 
             self.cur = self.conn.cursor()
             print("Conexión a Base de Datos Exitosa (Modo Seguro).")
@@ -20,18 +20,17 @@ class SistemaBackend:
             self.conn = None
 
     # ==========================================
-    # LECTURAS (SELECTS) - No requieren commit
+    # LECTURAS (SELECTS)
     # ==========================================
 
     def get_consultores_disponibles(self):
-        """Combina tu estructura con los datos detallados de tu compañero"""
+        """Obtiene la lista de consultores con todos los detalles"""
         if not self.conn: return []
         try:
-            # Traemos todos los datos ricos (descripción, experiencia, etc.)
             self.cur.execute("""
                 SELECT u.nombre, c.tarifa, c.especialidad, 
                        c.descripcion, c.experiencia_anos, 
-                       c.porcentaje_descuento
+                       c.porcentaje_descuento, c.primera_cita_descuento
                 FROM usuarios u 
                 JOIN consultores c ON u.id = c.id_usuario
                 ORDER BY u.nombre
@@ -41,19 +40,24 @@ class SistemaBackend:
             resultado = []
             for row in rows:
                 tarifa = float(row[1])
-                # Lógica de él: porcentaje dinámico | Si es None, es 0
                 pct_descuento = float(row[5]) if row[5] else 0.0
+                tiene_descuento = row[6] if row[6] is not None else False
                 
-                # Calculamos precio visual para mostrar en el frontend
-                precio_promo = tarifa - (tarifa * (pct_descuento / 100))
+                # Calculamos precio visual
+                if tiene_descuento and pct_descuento > 0:
+                    precio_promo = tarifa - (tarifa * (pct_descuento / 100))
+                    descuento_txt = f"{int(pct_descuento)}% OFF"
+                else:
+                    precio_promo = tarifa
+                    descuento_txt = "" 
                 
                 resultado.append({
                     "nombre": row[0],
                     "tarifa": tarifa,
                     "especialidad": row[2],
-                    "descripcion": row[3] or "Sin descripción",
+                    "descripcion": row[3] or "Sin descripción disponible",
                     "experiencia": row[4] or 0,
-                    "descuento_txt": f"{int(pct_descuento)}%" if pct_descuento > 0 else "0%",
+                    "descuento_txt": descuento_txt,
                     "precio_final_estimado": round(precio_promo, 2)
                 })
             return resultado
@@ -62,7 +66,6 @@ class SistemaBackend:
             return []
 
     def get_usuario(self, username):
-        """Busca info básica del usuario"""
         if not self.conn: return None
         try:
             self.cur.execute("SELECT id, nombre, rol FROM usuarios WHERE username = %s", (username,))
@@ -111,7 +114,6 @@ class SistemaBackend:
             print(e); return []
 
     def calcular_ganancias_consultor(self, usuario_consultor):
-        # Usamos TU lógica (más precisa): sumar el costo_final real guardado
         if not self.conn: return 0
         try:
             self.cur.execute("""
@@ -124,20 +126,16 @@ class SistemaBackend:
         except Exception: return 0
 
     def obtener_estadisticas_admin(self):
-        """Estadísticas generales (Aporte tuyo)"""
         if not self.conn: return {}
         try:
             stats = {}
-            # Ingresos reales
             self.cur.execute("SELECT SUM(costo_final) FROM reservas WHERE estado = 'Completada'")
             res = self.cur.fetchone()[0]
             stats['ingresos_totales'] = float(res) if res else 0.0
             
-            # Cantidad usuarios
             self.cur.execute("SELECT COUNT(*) FROM usuarios")
             stats['total_usuarios'] = self.cur.fetchone()[0]
             
-            # Consultor Top
             self.cur.execute("""
                 SELECT u.nombre, COUNT(r.id) as total 
                 FROM reservas r 
@@ -148,42 +146,54 @@ class SistemaBackend:
             """)
             row = self.cur.fetchone()
             stats['consultor_top'] = f"{row[0]} ({row[1]} citas)" if row else "Nadie aún"
-            
             return stats
         except Exception: return {}
 
     # ==========================================
-    # ESCRITURAS (INSERTS/UPDATES) - Requieren COMMIT
+    # ESCRITURAS (INSERTS/UPDATES) -
     # ==========================================
 
     def autenticar(self, usuario, password):
         if not self.conn: return False, None
         try:
-            self.cur.execute("SELECT rol FROM usuarios WHERE username = %s AND password = %s", (usuario, password))
+            self.cur.execute("SELECT rol, id FROM usuarios WHERE username = %s AND password = %s", (usuario, password))
             row = self.cur.fetchone()
-            return (True, row[0]) if row else (False, None)
+            if row:
+                return True, row[0]
+            return False, None
         except Exception: return False, None
 
     def registrar_usuario(self, usuario, password, nombre_completo, email, 
                           rol="cliente", especialidad="General", tarifa=0,
-                          # Campos extra de tu compañero
                           descripcion="", experiencia_anos=0, 
                           primera_cita_descuento=False, porcentaje_descuento=0):
         
+        # --- VALIDACIÓN DE SEGURIDAD MEJORADA ---
+        # 1. Validar Longitud
+        if len(password) < 8:
+            return False, "La contraseña debe tener al menos 8 caracteres."
+
+        # 2. Validar Complejidad (Mayúscula O Carácter Especial)
+        # c.isalnum() devuelve True si es letra o número. Si es False, es un símbolo (*, !, @, espacio, etc.)
+        tiene_mayuscula = any(c.isupper() for c in password)
+        tiene_especial = any(not c.isalnum() for c in password) 
+
+        if not (tiene_mayuscula or tiene_especial):
+            return False, "La contraseña debe incluir al menos una Mayúscula o un Carácter Especial (*, !, $, etc)."
+        # ---------------------------------------
+
         if not self.conn: return False, "Sin conexión"
         try:
-            # 1. Insertar Usuario (Tabla común)
+            # 1. Insertar Usuario
             self.cur.execute(
                 "INSERT INTO usuarios (username, password, nombre, email, rol) VALUES (%s, %s, %s, %s, %s) RETURNING id",
                 (usuario, password, nombre_completo, email, rol)
             )
             new_id = self.cur.fetchone()[0]
             
-            # 2. Si es consultor, insertar detalles (Fusión de ambos códigos)
+            # 2. Si es consultor, insertar detalles
             if rol == 'consultor':
-                # Convertimos checkbox a booleano si viene como True/False de Python
                 tiene_desc = 't' if primera_cita_descuento else 'f'
-                
                 self.cur.execute("""
                     INSERT INTO consultores 
                     (id_usuario, tarifa, especialidad, descripcion, experiencia_anos, primera_cita_descuento, porcentaje_descuento) 
@@ -191,7 +201,7 @@ class SistemaBackend:
                     (new_id, tarifa, especialidad, descripcion, experiencia_anos, tiene_desc, porcentaje_descuento)
                 )
             
-            self.conn.commit() # Guardado seguro
+            self.conn.commit()
             return True, "Registro exitoso."
             
         except psycopg2.IntegrityError:
@@ -202,24 +212,17 @@ class SistemaBackend:
             return False, f"Error técnico: {e}"
 
     def crear_reserva(self, usuario_cliente, consultor_nombre, fecha_str):
-        """
-        Fusión inteligente: 
-        1. Usa el descuento ESPECÍFICO del consultor (idea de él).
-        2. Guarda el PRECIO FINAL en la reserva (idea tuya, vital para contabilidad).
-        """
         if not self.conn: return False, "Sin conexión"
         try:
             fecha_str = fecha_str.replace("T", " ")
             fecha_cita = datetime.strptime(fecha_str, "%Y-%m-%d %H:%M")
             if fecha_cita < datetime.now(): return False, "Fecha inválida (pasado)."
 
-            # 1. Obtener Cliente
             self.cur.execute("SELECT id FROM usuarios WHERE username = %s", (usuario_cliente,))
             row_cli = self.cur.fetchone()
             if not row_cli: return False, "Cliente no encontrado"
             id_cli = row_cli[0]
 
-            # 2. Obtener Consultor, Tarifa Y SU DESCUENTO PERSONALIZADO
             self.cur.execute("""
                 SELECT u.id, c.tarifa, c.porcentaje_descuento, c.primera_cita_descuento
                 FROM usuarios u 
@@ -232,14 +235,11 @@ class SistemaBackend:
             
             id_cons = res_cons[0]
             tarifa_base = float(res_cons[1])
-            # Si tiene descuento configurado, lo usamos. Si no, es 0.
             descuento_pct = float(res_cons[2]) if res_cons[2] else 0.0
             
-            # 3. Calcular Precio Final
             monto_descuento = tarifa_base * (descuento_pct / 100)
             precio_final = tarifa_base - monto_descuento
 
-            # 4. Insertar Reserva guardando el costo histórico
             self.cur.execute(
                 """INSERT INTO reservas (id_cliente, id_consultor, fecha, estado, costo_final) 
                    VALUES (%s, %s, %s, 'Activa', %s)""", 
@@ -247,7 +247,7 @@ class SistemaBackend:
             )
             
             self.conn.commit()
-            return True, f"Reserva exitosa. Total a pagar: ${precio_final:.2f} (Desc: {int(descuento_pct)}%)"
+            return True, f"Reserva exitosa. Total a pagar: ${precio_final:.2f}"
 
         except Exception as e:
             self.conn.rollback()
@@ -257,22 +257,17 @@ class SistemaBackend:
     def actualizar_estado_cita(self, id_reserva, nuevo_estado, calificacion=0, notas=""):
         if not self.conn: return False, "Sin conexión"
         try:
-            # 1. Recuperamos el precio original pactado
             self.cur.execute("SELECT costo_final FROM reservas WHERE id = %s", (id_reserva,))
             row = self.cur.fetchone()
             if not row: return False, "Reserva no encontrada"
             
             costo_final = float(row[0])
 
-            # 2. LÓGICA DE VIDA REAL:
-            # - Si se Cancela: El costo final es 0 (nadie cobra, nadie paga).
-            # - Si se Completa: El costo se mantiene (se paga lo acordado), sin importar la nota.
-            
+            # Si se Cancela: El costo final es 0
             if nuevo_estado == 'Cancelada':
                 costo_final = 0.0
                 if notas == "": notas = "Cancelada por una de las partes."
             
-            # 3. Guardamos
             sql = """
                 UPDATE reservas 
                 SET estado = %s, calificacion = %s, notas = %s, costo_final = %s
