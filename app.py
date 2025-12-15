@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from backend.sistema import SistemaBackend
-from datetime import datetime  # ← Agregar esta línea
+from datetime import datetime  # Para manejar fechas
 app = Flask(__name__)
 app.secret_key = "secreto_seguro"  # Necesario para usar flash messages y session
 
-# Conectamos con el backend
+# Conectamos con el backend del sistema 
 db = SistemaBackend()
 
 # --- RUTA 1: LOGIN --
