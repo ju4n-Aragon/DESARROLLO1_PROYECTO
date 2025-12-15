@@ -22,50 +22,77 @@
 
 ## Universidad
 
-**Universidad del Valle**  
-**Ingeniería de Sistemas**  
-**Sede Tuluá**  
-**Año: 2025**
+**Universidad del Valle** **Ingeniería de Sistemas** **Sede Tuluá** **Año: 2025**
 
+---
 
+# 🌐 Sistema de Gestión para Consultores Expertos S.A.S (Versión Web)
 
+Aplicación Web desarrollada en **Python (Flask)** para la gestión integral de reservas entre clientes y consultores. El sistema implementa una arquitectura Modelo-Vista-Controlador (MVC) utilizando **PostgreSQL** para la persistencia de datos y **Bootstrap 5** para una interfaz moderna y responsiva.
 
+## ⚠️ IMPORTANTE PARA LA REVISIÓN
 
-# Sistema de Gestión para Consultores Expertos S.A.S
+El proyecto ha migrado de una arquitectura de escritorio a una **Arquitectura Web** para permitir mejor escalabilidad y manejo de sesiones.
 
-Sistema de escritorio desarrollado en Python para la gestión de reservas de citas entre clientes y consultores especializados. El sistema permite roles diferenciados, gestión de agenda y persistencia de datos en PostgreSQL.
+### 🌟 Nuevas Funcionalidades Implementadas:
+
+1.  **Lógica de Negocio "Vida Real":**
+    * **Cancelaciones:** Si un consultor o cliente cancela una cita, el costo final se ajusta automáticamente a **$0.00** en la base de datos (nadie cobra por un servicio no prestado).
+    * **Pagos:** Si la cita se completa, el pago se libera al 100% independientemente de la calificación, garantizando el pago por trabajo realizado.
+2.  **Seguridad Mejorada:**
+    * Validación estricta de contraseñas en el Backend (Mínimo 8 caracteres + 1 Mayúscula o Carácter Especial).
+    * Manejo transaccional (`commit`/`rollback`) para asegurar la integridad de los datos al registrar usuarios y reservas.
+3.  **Sistema de Descuentos Dinámicos:**
+    * Los consultores pueden configurar descuentos para primeras citas, los cuales se calculan y reflejan automáticamente en la interfaz del cliente antes del pago.
+
+---
 
 ## 📋 Características Principales
 
 ### 👤 Módulo de Clientes
-* **Registro y Autenticación:** Creación de cuenta con validación de correo y contraseña.
-* **Reserva de Citas:** Interfaz con calendario visual (`tkcalendar`) para seleccionar fecha y hora.
-* **Gestión:** Visualización de historial de citas y posibilidad de **cancelar** reservas (con validación de regla de 24 horas).
+* **Registro Avanzado:** Formulario con selección de rol visual y validación de seguridad.
+* **Reserva Inteligente:** Visualización de perfiles de consultores con tarifas, especialidad y cálculo automático de descuentos.
+* **Simulación de Pagos:** Interfaz de pago con tarjeta (simulada) integrada en el flujo de reserva.
+* **Calificación:** Sistema de calificación (1 a 5 estrellas) que queda registrado en el historial.
 
 ### 💼 Módulo de Consultores
-* **Perfil Profesional:** Visualización de especialidad y tarifa por hora.
-* **Agenda:** Vista centralizada de todas las citas programadas por los clientes.
-* **Gestión de Citas:** Funcionalidad para marcar citas como **"Completadas"** y registrar notas/conclusiones de la sesión.
+* **Perfil Profesional:** Configuración de tarifa, especialidad, biografía y años de experiencia.
+* **Gestión de Agenda:** Panel para visualizar citas entrantes.
+* **Manejo de Emergencias:** Botón para cancelar citas en caso de imprevistos (notificando al sistema y anulando el cobro).
 
-### 🛡️ Backend & Seguridad
-* **Base de Datos Relacional:** PostgreSQL con integridad referencial y herencia de tablas.
-* **Seguridad:** Uso de consultas parametrizadas para prevenir Inyección SQL.
-* **Arquitectura:** Estructura modular (Separación de Lógica y Vista).
+### 📊 Panel Administrativo (KPIs)
+* Visualización en tiempo real de:
+    * Ingresos Totales.
+    * Usuarios Activos.
+    * Consultor Estrella (Top Rated).
 
 ## 🛠️ Tecnologías Utilizadas
-* **Lenguaje:** Python 3.12+
-* **Interfaz Gráfica (GUI):** Tkinter, TTK
-* **Base de Datos:** PostgreSQL 16/18
-* **Librerías Clave:**
-    * `psycopg2`: Conexión a BD.
-    * `tkcalendar`: Widget de calendario.
-    * `Pillow`: Manejo de imágenes.
 
-## 🚀 Instrucciones de Instalación
+* **Backend:** Python 3.12+, Flask (Framework Web).
+* **Base de Datos:** PostgreSQL con librería `psycopg2`.
+* **Frontend:** HTML5, Jinja2, CSS3, Bootstrap 5 (Responsive).
+* **Control de Versiones:** Git.
 
-1. **Clonar o descargar el proyecto.**
+## 🚀 Instrucciones de Ejecución
 
-2. **Crear el Entorno Virtual (Opcional pero recomendado):**
-   ```bash
-   python -m venv env
-   # Activar en Windows: .\env\Scripts\activate
+Para probar el proyecto correctamente, siga estos pasos:
+
+1.  **Base de Datos:**
+    * Abra su cliente SQL (pgAdmin o psql).
+    * Ejecute el script `bd.sql` proporcionado para crear las tablas y los usuarios semilla (Admin, Karol G, etc.).
+
+2.  **Entorno Python:**
+    ```bash
+    # Instalar dependencias
+    pip install flask psycopg2
+    ```
+
+3.  **Ejecutar la Aplicación:**
+    ```bash
+    python app.py
+    ```
+
+4.  **Acceso:**
+    * Abra su navegador en: `http: '......................."`
+    * **Usuario Admin:** `admin` / `1234`
+   
