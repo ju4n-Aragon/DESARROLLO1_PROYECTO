@@ -3,8 +3,7 @@
 ## Integrantes
 
 - **Juan Sebastián Aragón Campo** – `2359449` – `3743`
-- **Bolaños Isiquita Diego Andres** – `2379918` – `3743`
-- **Tunubala Dagua Jesús Alberto** – `2379924` – `3743`
+
 
 ---
 
