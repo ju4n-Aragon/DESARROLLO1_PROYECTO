@@ -1,0 +1,153 @@
+/* ═══════════════════════════════════════════════
+   CONSULTORES EXPERTOS S.A.S — Estilos Globales
+   Versión mejorada con soporte para nuevas vistas
+   ═══════════════════════════════════════════════ */
+
+:root {
+    --navy: #0f1e35;
+    --navy-mid: #1a3254;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f8f4ed;
+    --green: #1a7a4a;
+    --text-dark: #1a2744;
+    --muted: #7a8ba0;
+    --border: #e0e7ef;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* ── MODO LOGIN (usa el nuevo layout de 2 paneles) ── */
+.modo-login {
+    /* El login.html maneja su propio layout; esta clase es herencia */
+    background: var(--navy);
+}
+
+/* ── MODO DASHBOARD ── */
+.modo-dashboard {
+    background-color: #f0f2f7;
+    display: block;
+    color: var(--text-dark);
+}
+
+/* ── MODO CLIENTE (fondo con imagen) ── */
+.modo-cliente {
+    background-color: #f0f2f7;
+    color: var(--text-dark);
+}
+
+/* ── CARDS GENÉRICAS ── */
+.card {
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    border: 1px solid var(--border);
+    background-color: #ffffff;
+    color: var(--text-dark);
+}
+
+/* Tarjeta de dinero verde */
+.card.bg-success {
+    background-color: #1a7a4a !important;
+    color: #ffffff !important;
+}
+
+.card.bg-success h2,
+.card.bg-success h5,
+.card.bg-success small {
+    color: #ffffff !important;
+}
+
+/* ── TABLAS ── */
+.table { color: var(--text-dark) !important; }
+.table td, .table th {
+    color: var(--text-dark) !important;
+    vertical-align: middle;
+}
+
+/* ── BOTÓN PRINCIPAL LEGACY (login viejo) ── */
+.boton-principal {
+    background-color: var(--navy);
+    color: white;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.15s;
+    width: 100%;
+    letter-spacing: 0.3px;
+}
+
+.boton-principal:hover {
+    background-color: var(--navy-mid);
+    transform: translateY(-1px);
+    color: white;
+}
+
+/* ── LOGIN CARD LEGACY ── */
+.login-card {
+    width: 420px;
+    max-width: 95vw;
+    padding: 2rem;
+    border-radius: 16px;
+}
+
+/* ── BADGE DE DESCUENTO ── */
+.discount-badge {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    color: #333;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8em;
+}
+
+/* ── HOVER CARD ── */
+.card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.1) !important; }
+
+/* ── GRADIENTE HEADER ── */
+.card-header-gradient {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a3254 100%);
+    color: white;
+}
+
+/* ── RESPONSIVO ── */
+@media (max-width: 768px) {
+    .login-card { width: 95vw; padding: 1.5rem; }
+}
+
+/* Skip link (visible on focus) */
+.skip-link {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+.skip-link:focus {
+    position: static;
+    left: 0;
+    width: auto;
+    height: auto;
+    padding: 10px 14px;
+    background: var(--gold);
+    color: var(--navy);
+    z-index: 9999;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+/* Visible focus outlines for keyboard users */
+:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+}

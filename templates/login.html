@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('site_title_login') }}</title>
+    <meta name="description" content="{{ _('meta_desc_login') }}">
+    <link rel="canonical" href="{{ request.url }}">
+    <meta name="robots" content="index, follow">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --navy: #0f1e35;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --cream: #f8f4ed;
+            --text-dark: #1a2744;
+            --glass: rgba(255,255,255,0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* PANEL IZQUIERDO — Imagen + Branding */
+        .left-panel {
+            width: 55%;
+            position: relative;
+            background: var(--navy);
+            overflow: hidden;
+        }
+
+        .left-panel .bg-image {
+            position: absolute;
+            inset: 0;
+            background-image: url('{{ url_for("static", filename="fondo_login.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            transition: opacity 0.8s ease;
+        }
+
+        .left-panel:hover .bg-image { opacity: 0.55; }
+
+        .left-panel .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(15,30,53,0.7) 0%, rgba(15,30,53,0.3) 100%);
+        }
+
+        .left-panel .brand-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3.5rem;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo .icon-wrapper {
+            width: 48px; height: 48px;
+            background: var(--gold);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: var(--navy);
+        }
+
+        .brand-logo .logo-text {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .brand-logo .logo-subtitle {
+            color: var(--gold-light);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .brand-main {
+            max-width: 420px;
+        }
+
+        .brand-main h1 {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 3.2rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 1.2rem;
+        }
+
+        .brand-main h1 span { color: var(--gold-light); }
+
+        .brand-main p {
+            color: rgba(255,255,255,0.75);
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .brand-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat-item .stat-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold-light);
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .brand-footer {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.78rem;
+        }
+
+        /* PANEL DERECHO — Formulario */
+        .right-panel {
+            width: 45%;
+            background: var(--cream);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 4rem;
+            position: relative;
+        }
+
+        .right-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+        }
+
+        .login-form-wrapper {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .form-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .form-header .greeting {
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 500;
+            margin-bottom: 0.6rem;
+        }
+
+        .form-header h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--text-dark);
+            font-size: 2.1rem;
+            font-weight: 700;
+        }
+
+        .form-header p {
+            color: #7a8ba0;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .field-group {
+            margin-bottom: 1.4rem;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.3px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0b0c0;
+            font-size: 0.85rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1.5px solid #d5dde6;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            background: white;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+        }
+
+        .input-wrapper input:focus + .input-icon,
+        .input-wrapper:focus-within .input-icon { color: var(--gold); }
+
+        .toggle-pw {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: #a0b0c0; font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .toggle-pw:hover { color: var(--gold); }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+            margin-top: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.05));
+        }
+
+        .btn-login:hover {
+            background: #1a3254;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(15,30,53,0.25);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0 1.2rem;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 0; right: 0;
+            height: 1px; background: #d5dde6;
+        }
+
+        .divider span {
+            position: relative;
+            background: var(--cream);
+            padding: 0 12px;
+            font-size: 0.78rem;
+            color: #a0b0c0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .register-link {
+            text-align: center;
+            font-size: 0.88rem;
+            color: #7a8ba0;
+        }
+
+        .register-link a {
+            color: var(--navy);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1.5px solid var(--gold);
+            padding-bottom: 1px;
+            transition: color 0.2s;
+        }
+
+        .register-link a:hover { color: var(--gold); }
+
+        /* Flash Messages */
+        .flash-msg {
+            background: #fff1f0;
+            border: 1px solid #ffccc7;
+            border-left: 4px solid #ff4d4f;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.875rem;
+            color: #a8071a;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Timezone badge */
+        .tz-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: #a0b0c0;
+            margin-top: 1.2rem;
+        }
+
+        .tz-badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #52c41a;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Loader spinner */
+        .btn-login .spinner {
+            display: none;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .left-panel { display: none; }
+            .right-panel { width: 100%; padding: 2rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+    <!-- PANEL IZQUIERDO -->
+    <div class="left-panel">
+        <div class="bg-image"></div>
+        <div class="overlay"></div>
+        <div class="brand-content">
+            <div class="brand-logo">
+                <div class="icon-wrapper">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div>
+                    <div class="logo-text">Consultores Expertos</div>
+                    <div class="logo-subtitle">S.A.S — Plataforma Digital</div>
+                </div>
+            </div>
+
+            <div class="brand-main">
+                <h1>Tu asesoría,<br><span>sin complicaciones.</span></h1>
+                <p>Agenda, gestiona pagos y mide el rendimiento de tu firma consultora en una sola plataforma segura y centralizada.</p>
+                <div class="brand-stats">
+                    <div class="stat-item">
+                        <div class="stat-num">3</div>
+                        <div class="stat-label">Roles de usuario</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">24/7</div>
+                        <div class="stat-label">Disponibilidad</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">100%</div>
+                        <div class="stat-label">Trazabilidad</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="brand-footer">
+                © 2026 Consultores Expertos S.A.S · Universidad del Valle
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div class="right-panel" id="main-content">
+        <div class="login-form-wrapper">
+
+            <div class="form-header">
+                <div class="greeting">{{ _('bienvenido') }}</div>
+                <h2>{{ _('iniciar_sesion') }}</h2>
+                <p>Accede a tu panel de gestión personalizado.</p>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-msg">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="/" id="loginForm">
+                <div class="field-group">
+                    <label for="username">Usuario</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="username" name="username" placeholder="tu_usuario" required autocomplete="username">
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="password">Contraseña</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+                        <i class="fas fa-lock input-icon"></i>
+                        <button type="button" class="toggle-pw" onclick="togglePassword()" aria-label="Ver contraseña">
+                            <i class="fas fa-eye" id="pw-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                    <button type="submit" class="btn-login" id="submitBtn">
+                        <span id="btn-text">{{ _('ingresar') }}</span>
+                    <div class="spinner" id="btn-spinner"></div>
+                </button>
+            </form>
+
+            <div class="divider"><span>o</span></div>
+
+            <div class="register-link">
+                ¿No tienes cuenta? <a href="{{ url_for('registro') }}">{{ _('registrate') }}</a>
+            </div>
+
+            <div style="margin-top:8px; font-size:0.85rem;">Idioma: <a href="{{ url_for('set_language', lang='es') }}">ES</a> · <a href="{{ url_for('set_language', lang='en') }}">EN</a></div>
+
+            <!-- WorldTimeAPI badge -->
+            <div class="tz-badge">
+                <div class="dot"></div>
+                <span id="tz-display">Sincronizando hora — America/Bogota...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── TOGGLE CONTRASEÑA ──
+        function togglePassword() {
+            const pw = document.getElementById('password');
+            const icon = document.getElementById('pw-icon');
+            if (pw.type === 'password') {
+                pw.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                pw.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // ── SPINNER EN SUBMIT ──
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            document.getElementById('btn-text').style.display = 'none';
+            document.getElementById('btn-spinner').style.display = 'block';
+        });
+
+        // ── WORLDTIMEAPI — Zona horaria Colombia ──
+        // Sección 21 del informe: sincronización de zona horaria para la regla de 24h
+        async function syncTimezone() {
+            try {
+                const res = await fetch('https://worldtimeapi.org/api/timezone/America/Bogota');
+                const data = await res.json();
+                const dt = new Date(data.datetime);
+                const hhmm = dt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
+                document.getElementById('tz-display').textContent =
+                    `Hora Colombia: ${hhmm} · ${data.abbreviation}`;
+            } catch (e) {
+                document.getElementById('tz-display').textContent = 'Zona horaria: America/Bogota';
+            }
+        }
+        syncTimezone();
+    </script>
+</body>
+</html>

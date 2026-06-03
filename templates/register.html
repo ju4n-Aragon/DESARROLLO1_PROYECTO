@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('crear_cuenta') }} — Consultores Expertos S.A.S</title>
+    <meta name="description" content="{{ _('meta_desc_register') }}">
+    <meta name="robots" content="index, follow">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --navy: #0f1e35;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --cream: #f8f4ed;
+            --green: #1a7a4a;
+            --green-light: #e8f5ee;
+            --blue: #1a4a7a;
+            --blue-light: #e8f0f8;
+            --text-dark: #1a2744;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f1e35 0%, #1a3254 40%, #0a3060 100%);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        /* Decorative background dots */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(201,168,76,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 75%, rgba(26,74,122,0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .register-wrapper {
+            width: 100%;
+            max-width: 780px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding: 0 0.25rem;
+        }
+
+        .top-logo {
+            display: flex; align-items: center; gap: 10px;
+            color: white; text-decoration: none;
+        }
+
+        .top-logo .icon {
+            width: 36px; height: 36px;
+            background: var(--gold);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; color: var(--navy);
+        }
+
+        .top-logo span {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .top-login-link {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .top-login-link:hover { color: var(--gold-light); }
+
+        /* CARD */
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+        }
+
+        .card-top {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a3254 100%);
+            padding: 2.2rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-top::after {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: rgba(201,168,76,0.1);
+        }
+
+        .card-top::before {
+            content: '';
+            position: absolute;
+            bottom: -40px; left: 30%;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .card-top-content { position: relative; z-index: 1; }
+
+        .card-top .step-indicator {
+            display: flex; gap: 6px; margin-bottom: 1rem;
+        }
+
+        .step-dot {
+            height: 4px; border-radius: 2px;
+            transition: width 0.4s ease, background 0.4s ease;
+        }
+
+        .step-dot.active { background: var(--gold); width: 28px; }
+        .step-dot.done { background: rgba(255,255,255,0.5); width: 14px; }
+        .step-dot.pending { background: rgba(255,255,255,0.2); width: 14px; }
+
+        .card-top h2 {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .card-top p {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.88rem;
+            margin-top: 0.3rem;
+        }
+
+        .card-body-content {
+            padding: 2.2rem 2.5rem;
+        }
+
+        /* ROLE SELECTOR */
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .role-option {
+            border: 2px solid #e0e7ef;
+            border-radius: 14px;
+            padding: 1.4rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            background: white;
+        }
+
+        .role-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .role-option.selected-cliente {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+
+        .role-option.selected-consultor {
+            border-color: var(--green);
+            background: var(--green-light);
+        }
+
+        .role-option .role-check {
+            position: absolute;
+            top: 12px; right: 12px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; color: white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .role-option.selected-cliente .role-check {
+            background: var(--blue); opacity: 1;
+        }
+
+        .role-option.selected-consultor .role-check {
+            background: var(--green); opacity: 1;
+        }
+
+        .role-option .role-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            transition: all 0.25s;
+        }
+
+        #card_cliente .role-icon { background: #e8f0f8; color: var(--blue); }
+        .role-option.selected-cliente .role-icon { background: var(--blue); color: white; }
+        #card_consultor .role-icon { background: var(--green-light); color: var(--green); }
+        .role-option.selected-consultor .role-icon { background: var(--green); color: white; }
+
+        .role-option h5 {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .role-option p {
+            font-size: 0.8rem;
+            color: #7a8ba0;
+            margin: 0;
+        }
+
+        /* SECTIONS */
+        .form-section {
+            margin-bottom: 1.8rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #a0b0c0;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e7ef;
+        }
+
+        /* INPUTS */
+        .field-group { margin-bottom: 1rem; }
+
+        .field-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .field-group label .required { color: #e74c3c; margin-left: 2px; }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #c0ccd8;
+            font-size: 0.8rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .input-wrapper input,
+        .input-wrapper select,
+        .input-wrapper textarea {
+            width: 100%;
+            padding: 10px 13px 10px 36px;
+            border: 1.5px solid #dde4ec;
+            border-radius: 9px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .input-wrapper select { padding-left: 36px; }
+
+        .input-wrapper textarea {
+            resize: vertical;
+            min-height: 72px;
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus,
+        .input-wrapper textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+        }
+
+        .input-wrapper:focus-within .input-icon { color: var(--gold); }
+
+        /* CONSULTOR SECTION */
+        .consultor-fields {
+            display: none;
+            background: #f7faf8;
+            border: 1.5px solid #c3e6cb;
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-top: 0.5rem;
+            animation: expand 0.35s ease;
+        }
+
+        @keyframes expand {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .consultor-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.2rem;
+        }
+
+        .consultor-header .badge-pro {
+            background: var(--green);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .consultor-header h6 {
+            font-weight: 600;
+            color: var(--green);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* DISCOUNT TOGGLE */
+        .discount-toggle-wrapper {
+            background: white;
+            border: 1.5px solid #dde4ec;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 0.5rem;
+        }
+
+        .custom-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .toggle-text { font-size: 0.88rem; font-weight: 500; color: var(--text-dark); }
+        .toggle-text small { display: block; color: #a0b0c0; font-size: 0.75rem; font-weight: 400; }
+
+        .toggle-switch {
+            width: 42px; height: 22px;
+            background: #dde4ec;
+            border-radius: 11px;
+            position: relative;
+            transition: background 0.25s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.25s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input[type="checkbox"]:checked + .toggle-switch {
+            background: var(--green);
+        }
+
+        input[type="checkbox"]:checked + .toggle-switch::after {
+            transform: translateX(20px);
+        }
+
+        input[type="checkbox"].hidden-check { display: none; }
+
+        .discount-percent-input {
+            margin-top: 10px;
+            display: none;
+            animation: expand 0.2s ease;
+        }
+
+        /* SUBMIT */
+        .btn-register {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--navy) 0%, #1a3254 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.25s;
+            margin-top: 1rem;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(15,30,53,0.25);
+        }
+
+        /* Flash */
+        .flash-msg {
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-left: 4px solid #faad14;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.875rem;
+            color: #614700;
+            margin-bottom: 1.2rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Password strength */
+        .pw-strength { margin-top: 5px; display: flex; gap: 3px; }
+        .pw-bar { height: 3px; flex: 1; border-radius: 2px; background: #e0e7ef; transition: background 0.3s; }
+        .pw-bar.weak { background: #ff4d4f; }
+        .pw-bar.medium { background: #faad14; }
+        .pw-bar.strong { background: #52c41a; }
+
+        @media (max-width: 576px) {
+            body { padding: 1rem 0.5rem; }
+            .card-body-content, .card-top { padding: 1.5rem 1.2rem; }
+            .role-selector { grid-template-columns: 1fr; }
+        }
+    </style>
+
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+<div class="register-wrapper" id="main-content">
+
+    <div class="top-bar">
+        <a href="{{ url_for('login') }}" class="top-logo" style="text-decoration: none;">
+            <div class="icon"><i class="fas fa-briefcase"></i></div>
+            <span>Consultores Expertos S.A.S</span>
+        </a>
+        <a href="{{ url_for('login') }}" class="top-login-link">
+            <i class="fas fa-sign-in-alt me-1"></i> Ya tengo cuenta
+        </a>
+    </div>
+
+    <div class="register-card">
+
+        <!-- TOP HEADER -->
+        <div class="card-top">
+            <div class="card-top-content">
+                <div class="step-indicator">
+                    <div class="step-dot active" id="dot1"></div>
+                    <div class="step-dot pending" id="dot2"></div>
+                    <div class="step-dot pending" id="dot3"></div>
+                </div>
+                <h2>{{ _('crear_cuenta') }}</h2>
+                <p>Únete a nuestra red de expertos y clientes en Colombia</p>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body-content">
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-msg">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="/registro" id="registerForm">
+                <input type="hidden" name="rol" id="hidden_rol" value="cliente">
+
+                <!-- PASO 1: TIPO DE PERFIL -->
+                <div class="form-section">
+                    <div class="section-title">Tipo de perfil</div>
+                    <div class="role-selector">
+                        <div class="role-option selected-cliente" id="card_cliente" role="button" tabindex="0" aria-pressed="true" onclick="selectRole('cliente')" onkeydown="if(event.key==='Enter'||event.key===' '){ event.preventDefault(); selectRole('cliente'); }">
+                            <div class="role-check"><i class="fas fa-check"></i></div>
+                            <div class="role-icon"><i class="fas fa-user"></i></div>
+                            <h5>Cliente</h5>
+                            <p>Quiero contratar servicios de consultoría</p>
+                        </div>
+                        <div class="role-option" id="card_consultor" role="button" tabindex="0" aria-pressed="false" onclick="selectRole('consultor')" onkeydown="if(event.key==='Enter'||event.key===' '){ event.preventDefault(); selectRole('consultor'); }">
+                            <div class="role-check"><i class="fas fa-check"></i></div>
+                            <div class="role-icon"><i class="fas fa-briefcase"></i></div>
+                            <h5>Consultor</h5>
+                            <p>Quiero ofrecer mis servicios profesionales</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 2: DATOS BÁSICOS -->
+                <div class="form-section">
+                    <div class="section-title">Información básica</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label for="nombre">Nombre completo <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Pérez" required>
+                                    <i class="fas fa-id-card input-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label for="email">Correo electrónico <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="email" id="email" name="email" placeholder="juan@correo.com" required>
+                                    <i class="fas fa-envelope input-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label for="username">Nombre de usuario <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="username" name="username" placeholder="juan_perez" required>
+                                    <i class="fas fa-at input-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label for="pw-input">Contraseña <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="password" name="password" id="pw-input" placeholder="Mín. 8 caracteres" required oninput="checkStrength(this.value)">
+                                    <i class="fas fa-lock input-icon"></i>
+                                </div>
+                                <div class="pw-strength">
+                                    <div class="pw-bar" id="bar1"></div>
+                                    <div class="pw-bar" id="bar2"></div>
+                                    <div class="pw-bar" id="bar3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label for="pw-confirm">Confirmar contraseña <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="pw-confirm" placeholder="Repetir contraseña" required>
+                                    <i class="fas fa-shield-alt input-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 3: DATOS CONSULTOR (condicional) -->
+                <div class="consultor-fields" id="campos-consultor">
+                    <div class="consultor-header">
+                        <span class="badge-pro">PRO</span>
+                        <h6>Perfil Profesional</h6>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label for="especialidad">Especialidad</label>
+                                <div class="input-wrapper">
+                                    <select id="especialidad" name="especialidad">
+                                        <option value="General">General</option>
+                                        <option value="Finanzas">Finanzas</option>
+                                        <option value="Tecnología">Tecnología</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Ciberseguridad">Ciberseguridad</option>
+                                        <option value="Legal">Legal</option>
+                                    </select>
+                                    <i class="fas fa-certificate input-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label for="experiencia_años">Años de experiencia</label>
+                                <div class="input-wrapper">
+                                    <input id="experiencia_años" type="number" name="experiencia_años" min="0" value="0">
+                                    <i class="fas fa-clock input-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label for="descripcion">Biografía profesional</label>
+                                <div class="input-wrapper">
+                                    <textarea id="descripcion" name="descripcion" placeholder="Describe tu experiencia y servicios..."></textarea>
+                                    <i class="fas fa-pen input-icon" style="top:14px; transform:none;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label for="tarifa">Tarifa por hora (USD)</label>
+                                <div class="input-wrapper">
+                                    <input id="tarifa" type="number" name="tarifa" min="0" value="50">
+                                    <i class="fas fa-dollar-sign input-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="discount-toggle-wrapper">
+                                <label class="custom-toggle" for="checkDescuento">
+                                    <div class="toggle-text">
+                                        Ofrecer descuento en primera cita
+                                        <small>Atrae nuevos clientes con un precio especial</small>
+                                    </div>
+                                    <input type="checkbox" class="hidden-check" name="primera_cita_descuento" value="true" id="checkDescuento" onchange="toggleDescuento()">
+                                    <div class="toggle-switch"></div>
+                                </label>
+                                <div class="discount-percent-input" id="divPorcentaje">
+                                    <label for="porcentaje_descuento" style="font-size:0.82rem; font-weight:500; color:var(--text-dark); display:block; margin-bottom:0.3rem;">Porcentaje de descuento (%)</label>
+                                    <div class="input-wrapper">
+                                        <input id="porcentaje_descuento" type="number" name="porcentaje_descuento" min="0" max="100" value="15">
+                                        <i class="fas fa-percent input-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <i class="fas fa-user-plus me-2"></i> Crear mi cuenta
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:1rem; font-size:0.78rem; color:rgba(255,255,255,0.4);">
+        © 2026 Consultores Expertos S.A.S · Universidad del Valle
+    </div>
+</div>
+
+<script>
+    // ── SELECCIÓN DE ROL ──
+    function selectRole(role) {
+        document.getElementById('hidden_rol').value = role;
+
+        const cardCliente = document.getElementById('card_cliente');
+        const cardConsultor = document.getElementById('card_consultor');
+        const camposConsultor = document.getElementById('campos-consultor');
+
+        cardCliente.className = 'role-option';
+        cardConsultor.className = 'role-option';
+
+        if (role === 'cliente') {
+            cardCliente.classList.add('selected-cliente');
+            camposConsultor.style.display = 'none';
+            updateDots(1);
+        } else {
+            cardConsultor.classList.add('selected-consultor');
+            camposConsultor.style.display = 'block';
+            updateDots(2);
+        }
+    }
+
+    function updateDots(active) {
+        const dots = ['dot1', 'dot2', 'dot3'];
+        dots.forEach((id, i) => {
+            const dot = document.getElementById(id);
+            dot.className = 'step-dot';
+            if (i < active) dot.classList.add('done');
+            else if (i === active) dot.classList.add('active');
+            else dot.classList.add('pending');
+        });
+    }
+
+    // ── DESCUENTO TOGGLE ──
+    function toggleDescuento() {
+        const check = document.getElementById('checkDescuento');
+        const div = document.getElementById('divPorcentaje');
+        div.style.display = check.checked ? 'block' : 'none';
+    }
+
+    // ── FORTALEZA DE CONTRASEÑA ──
+    function checkStrength(val) {
+        const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
+        bars.forEach(b => b.className = 'pw-bar');
+        if (val.length === 0) return;
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val) || /[0-9]/.test(val)) score++;
+        if (/[^a-zA-Z0-9]/.test(val) && val.length >= 10) score++;
+        const cls = ['weak', 'medium', 'strong'];
+        for (let i = 0; i < score; i++) bars[i].classList.add(cls[score - 1]);
+    }
+
+    // ── VALIDACIÓN SUBMIT ──
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const pw = document.getElementById('pw-input').value;
+        const confirm = document.getElementById('pw-confirm').value;
+        if (pw !== confirm) {
+            e.preventDefault();
+            alert('Las contraseñas no coinciden. Por favor verifica.');
+            document.getElementById('pw-confirm').focus();
+        }
+    });
+</script>
+</body>
+</html>

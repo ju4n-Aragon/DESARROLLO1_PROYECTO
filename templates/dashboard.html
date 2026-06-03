@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('panel_principal') }} — Consultores Expertos S.A.S</title>
+    <meta name="description" content="{{ _('meta_desc_dashboard') }}">
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --navy: #0f1e35;
+            --navy-mid: #1a3254;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --cream: #f7f3ee;
+            --green: #1a7a4a;
+            --green-bg: #e8f5ee;
+            --red: #c0392b;
+            --sidebar-w: 240px;
+            --text: #1a2744;
+            --muted: #7a8ba0;
+            --border: #e0e7ef;
+            --card-bg: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f0f2f7;
+            color: var(--text);
+        }
+
+        /* ═══════════════ SIDEBAR ═══════════════ */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: var(--sidebar-w);
+            height: 100vh;
+            background: var(--navy);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1.2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-brand .brand-icon {
+            width: 36px; height: 36px;
+            background: var(--gold);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; color: var(--navy);
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand .brand-name {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .sidebar-brand .brand-name small {
+            display: block;
+            color: rgba(255,255,255,0.4);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 400;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-user {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .user-avatar {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; font-weight: 600; color: white;
+            flex-shrink: 0;
+        }
+
+        .user-avatar.admin { background: linear-gradient(135deg,#c9a84c,#e8c97a); color: var(--navy); }
+        .user-avatar.cliente { background: linear-gradient(135deg,#1a4a7a,#2d6eb0); }
+        .user-avatar.consultor { background: linear-gradient(135deg,#1a7a4a,#2d9c6b); }
+
+        .sidebar-user .user-info {
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .sidebar-user .user-name {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .sidebar-user .role-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        .role-badge.admin { background: rgba(201,168,76,0.2); color: var(--gold-light); }
+        .role-badge.cliente { background: rgba(45,110,176,0.2); color: #7ab8e8; }
+        .role-badge.consultor { background: rgba(45,156,107,0.2); color: #7ae8b0; }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-section-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.25);
+            padding: 0 1.2rem;
+            margin: 0.8rem 0 0.4rem;
+        }
+
+        .nav-item-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.55rem 1.2rem;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 400;
+            border-radius: 0;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item-btn .nav-icon {
+            width: 28px; height: 28px;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .nav-item-btn:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-item-btn:hover .nav-icon { background: rgba(255,255,255,0.1); }
+
+        .nav-item-btn.active {
+            color: white;
+            background: rgba(201,168,76,0.12);
+        }
+
+        .nav-item-btn.active .nav-icon {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.2rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .sidebar-footer .tz-chip {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.35);
+            display: flex; align-items: center; gap: 5px;
+            margin-bottom: 0.6rem;
+        }
+
+        .tz-chip .dot {
+            width: 5px; height: 5px;
+            border-radius: 50%; background: #52c41a;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.55);
+            font-size: 0.82rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(192,57,43,0.15);
+            border-color: rgba(192,57,43,0.3);
+            color: #e57373;
+        }
+
+        /* ═══════════════ MAIN CONTENT ═══════════════ */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .topbar {
+            background: white;
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 50;
+        }
+
+        .topbar-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .topbar-right {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .time-display {
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .content-area {
+            padding: 2rem;
+        }
+
+        /* ═══════════════ FLASH ALERT ═══════════════ */
+        .flash-alert {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-left: 4px solid #16a34a;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.88rem; color: #15803d;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ═══════════════ STAT CARDS ═══════════════ */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 1.4rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+
+        .stat-card.green::before { background: linear-gradient(90deg, #1a7a4a, #38ef7d); }
+        .stat-card.blue::before { background: linear-gradient(90deg, #1a4a7a, #2196f3); }
+        .stat-card.gold::before { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+        .stat-card.red::before { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+
+        .stat-card .stat-icon {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; margin-bottom: 1rem;
+        }
+
+        .stat-card.green .stat-icon { background: var(--green-bg); color: var(--green); }
+        .stat-card.blue .stat-icon { background: #e8f0f8; color: #1a4a7a; }
+        .stat-card.gold .stat-icon { background: rgba(201,168,76,0.12); color: var(--gold); }
+        .stat-card.red .stat-icon { background: #fef2f2; color: var(--red); }
+
+        .stat-card .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+        }
+
+        /* ═══════════════ SECTION CARDS ═══════════════ */
+        .panel-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-card-header {
+            padding: 1.1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafbfc;
+        }
+
+        .panel-card-header .header-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .panel-card-header .header-icon {
+            width: 28px; height: 28px;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            background: rgba(201,168,76,0.12);
+            color: var(--gold);
+        }
+
+        .panel-card-body { padding: 1.5rem; }
+
+        /* ═══════════════ TABLE ═══════════════ */
+        .reservas-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .reservas-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 10px 14px;
+            background: #f7f9fb;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .reservas-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        .reservas-table tr:last-child td { border-bottom: none; }
+        .reservas-table tbody tr { transition: background 0.15s; }
+        .reservas-table tbody tr:hover { background: #fafbfc; }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.activa { background: #fff7e6; color: #d48806; }
+        .status-badge.completada { background: var(--green-bg); color: var(--green); }
+        .status-badge.cancelada { background: #fff1f0; color: #c0392b; }
+
+        .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+        /* ═══════════════ BOOKING FORM ═══════════════ */
+        .consultant-card {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .consultant-card:hover { border-color: var(--gold); background: rgba(201,168,76,0.03); }
+        .consultant-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+
+        .consultant-avatar {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; font-weight: 700;
+            color: white; flex-shrink: 0;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .consultant-info { flex: 1; min-width: 0; }
+        .consultant-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .consultant-spec { font-size: 0.78rem; color: var(--muted); }
+
+        .consultant-price { text-align: right; flex-shrink: 0; }
+        .consultant-price .price { font-size: 1rem; font-weight: 700; color: var(--text); }
+        .consultant-price .price-sub { font-size: 0.7rem; color: var(--muted); }
+        .consultant-price .discount-chip {
+            background: #fff0f3;
+            color: #e03131;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .booking-select {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: white;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .booking-select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.1); }
+
+        .booking-info-box {
+            background: #f0fdf4;
+            border: 1.5px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .price-compare { display: flex; align-items: center; gap: 10px; margin-top: 0.5rem; }
+        .price-original { font-size: 0.85rem; color: var(--muted); text-decoration: line-through; }
+        .price-final { font-size: 1.3rem; font-weight: 700; color: var(--green); font-family: 'Playfair Display', serif; }
+
+        .payment-section {
+            background: var(--cream);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .payment-section h6 { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 0.8rem; }
+
+        .field-input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 0.6rem;
+        }
+
+        .field-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.08); }
+
+        .btn-book {
+            width: 100%;
+            padding: 12px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .btn-book:hover { background: var(--navy-mid); transform: translateY(-1px); }
+
+        /* ═══════════════ ACTION BUTTONS ═══════════════ */
+        .action-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-pay { background: var(--green-bg); color: var(--green); }
+        .btn-pay:hover { background: var(--green); color: white; }
+        .btn-cancel { background: #fff1f0; color: var(--red); }
+        .btn-cancel:hover { background: var(--red); color: white; }
+
+        .rating-group { display: flex; align-items: center; gap: 5px; }
+        .rating-group input { width: 48px; padding: 4px 6px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.82rem; outline:none; }
+        .rating-group input:focus { border-color: var(--gold); }
+
+        /* ═══════════════ AI ASSISTANT ═══════════════ */
+        .ai-panel {
+            position: fixed;
+            right: 0; bottom: 0;
+            width: 360px;
+            height: 520px;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column;
+            z-index: 200;
+            transform: translateY(calc(100% - 56px));
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .ai-panel.open { transform: translateY(0); }
+
+        .ai-header {
+            padding: 0.9rem 1.2rem;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .ai-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; color: var(--navy);
+            flex-shrink: 0;
+        }
+
+        .ai-header-text { flex: 1; }
+        .ai-header-text .ai-name { font-size: 0.88rem; font-weight: 600; color: white; }
+        .ai-header-text .ai-status { font-size: 0.7rem; color: rgba(255,255,255,0.55); display:flex; align-items:center; gap:4px; }
+        .ai-status-dot { width: 5px; height: 5px; border-radius:50%; background:#52c41a; animation: pulse 2s infinite; }
+
+        .ai-toggle-btn {
+            background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,0.6); font-size: 0.8rem;
+            transition: color 0.2s, transform 0.3s;
+        }
+
+        .ai-panel.open .ai-toggle-btn { transform: rotate(180deg); }
+
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            background: #f8fafc;
+        }
+
+        .ai-msg {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            animation: fadeMsg 0.25s ease;
+        }
+
+        @keyframes fadeMsg { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+        .ai-msg.ai { background: white; color: var(--text); border-radius: 4px 12px 12px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); align-self: flex-start; }
+        .ai-msg.user { background: var(--navy); color: white; border-radius: 12px 4px 12px 12px; align-self: flex-end; }
+
+        .ai-typing {
+            display: flex; gap: 4px; align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 4px 12px 12px 12px;
+            max-width: 70px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            align-self: flex-start;
+        }
+
+        .typing-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--muted);
+            animation: typingDot 1.2s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+        .ai-quick-btns {
+            display: flex; flex-wrap: wrap; gap: 5px;
+            padding: 0 1rem 0.5rem;
+            background: #f8fafc;
+        }
+
+        .quick-btn {
+            padding: 4px 10px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            font-size: 0.75rem;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .quick-btn:hover { background: var(--navy); color: white; border-color: var(--navy); }
+
+        .ai-input-area {
+            padding: 0.8rem;
+            border-top: 1px solid var(--border);
+            display: flex; gap: 6px;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .ai-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .ai-input:focus { border-color: var(--gold); }
+
+        .ai-send-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--navy);
+            color: white;
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .ai-send-btn:hover { background: var(--navy-mid); }
+        .ai-send-btn:disabled { opacity: 0.5; cursor: default; }
+
+        /* ═══════════════ RESPONSIVE ═══════════════ */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+            .ai-panel { width: 100%; border-radius: 16px 16px 0 0; }
+        }
+
+        /* Colors for consultant avatars */
+        .av-1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .av-2 { background: linear-gradient(135deg, #11998e, #38ef7d); color: #0a3a1e !important; }
+        .av-3 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .av-4 { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #0a2a3a !important; }
+        .av-5 { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #0a3a1e !important; }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--muted);
+        }
+
+        .empty-state i { font-size: 2.5rem; opacity: 0.3; margin-bottom: 1rem; display: block; }
+        .empty-state p { font-size: 0.88rem; }
+    </style>
+</head>
+
+<body>
+
+<a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon"><i class="fas fa-briefcase"></i></div>
+        <div class="brand-name">
+            Consultores Expertos
+            <small>S.A.S</small>
+        </div>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="user-info">
+            <div class="user-avatar {{ rol }}">{{ usuario[0]|upper }}</div>
+            <div>
+                <div class="user-name">{{ usuario }}</div>
+                <span class="role-badge {{ rol }}">{{ rol }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <button class="nav-item-btn active">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            Panel Principal
+        </button>
+
+        {% if rol == 'cliente' %}
+        <div class="nav-section-label">Servicios</div>
+        <button class="nav-item-btn" onclick="scrollToSection('reservas-section')">
+            <div class="nav-icon"><i class="fas fa-calendar-check"></i></div>
+            Mis Reservas
+        </button>
+        <button class="nav-item-btn" onclick="scrollToSection('booking-section')">
+            <div class="nav-icon"><i class="fas fa-plus-circle"></i></div>
+            Nueva Cita
+        </button>
+        {% endif %}
+
+        {% if rol == 'consultor' %}
+        <div class="nav-section-label">Gestión</div>
+        <button class="nav-item-btn" onclick="scrollToSection('reservas-section')">
+            <div class="nav-icon"><i class="fas fa-calendar"></i></div>
+            Mi Agenda
+        </button>
+        <button class="nav-item-btn" onclick="scrollToSection('ganancias-section')">
+            <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
+            Ganancias
+        </button>
+        {% endif %}
+
+        {% if rol == 'admin' %}
+        <div class="nav-section-label">Administración</div>
+        <button class="nav-item-btn" onclick="scrollToSection('kpis-section')">
+            <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+            KPIs
+        </button>
+        {% endif %}
+
+        <div class="nav-section-label">Herramientas</div>
+        <button class="nav-item-btn" onclick="toggleAI()">
+            <div class="nav-icon"><i class="fas fa-robot"></i></div>
+            Asistente IA
+        </button>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="tz-chip">
+            <div class="dot"></div>
+            <span id="tz-sidebar">Colombia (Bogotá)</span>
+        </div>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i>
+            Cerrar Sesión
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+<div class="main-content" id="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+            <div class="topbar-title">
+            {% if rol == 'admin' %}Panel Corporativo{% elif rol == 'consultor' %}Mi Panel{% else %}Mis Consultas{% endif %}
+        </div>
+        <div style="margin-left:12px;">Idioma: <a href="{{ url_for('set_language', lang='es') }}">ES</a> · <a href="{{ url_for('set_language', lang='en') }}">EN</a></div>
+        <div class="topbar-right">
+            <div class="time-display">
+                <i class="fas fa-clock"></i>
+                <span id="live-time">--:--</span>
+            </div>
+            <button id="enable-push-btn" class="btn btn-sm" style="margin-left:8px;">Activar notificaciones</button>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area">
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-alert">
+                    <i class="fas fa-check-circle"></i>
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- ════ ADMIN ════ -->
+        {% if rol == 'admin' %}
+        <div id="kpis-section">
+            <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="stat-value">${{ stats.ingresos_totales }}</div>
+                    <div class="stat-label">Ingresos Totales (USD)</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-value">{{ stats.total_usuarios }}</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                <div class="stat-card gold">
+                    <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="stat-value" style="font-size:1.2rem;">{{ stats.consultor_top }}</div>
+                    <div class="stat-label">Consultor Estrella 🏆</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ════ CONSULTOR ════ -->
+        {% if rol == 'consultor' %}
+        <div id="ganancias-section" class="stat-grid" style="grid-template-columns: 1fr;">
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-value">${{ ganancias }} USD</div>
+                <div class="stat-label">Ganancias acumuladas por citas completadas</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ════ TABLA DE RESERVAS ════ -->
+        {% if rol != 'admin' %}
+        <div id="reservas-section" class="panel-card">
+            <div class="panel-card-header">
+                <div class="header-title">
+                    <div class="header-icon"><i class="fas fa-calendar-alt"></i></div>
+                    {{ 'Mis Reservas' if rol == 'cliente' else 'Mi Agenda' }}
+                </div>
+                <span style="font-size:0.78rem; color:var(--muted);">{{ reservas|length }} cita(s)</span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="reservas-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{{ 'Consultor' if rol == 'cliente' else 'Cliente' }}</th>
+                            <th>Fecha y Hora</th>
+                            <th>Estado</th>
+                            <th>Costo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in reservas %}
+                        <tr>
+                            <td style="color:var(--muted); font-size:0.8rem;">{{ res[0] }}</td>
+                            <td>
+                                <strong>{{ res[1] }}</strong>
+                                {% if res[4] %}
+                                <div style="font-size:0.75rem; color:var(--muted);">{{ res[4] }}</div>
+                                {% endif %}
+                            </td>
+                            <td style="font-size:0.85rem;">{{ res[2] }}</td>
+                            <td>
+                                {% if res[3] == 'Activa' %}
+                                    <span class="status-badge activa">Activa</span>
+                                {% elif res[3] == 'Completada' %}
+                                    <span class="status-badge completada">Completada</span>
+                                {% else %}
+                                    <span class="status-badge cancelada">Cancelada</span>
+                                    {% if res[5] %}
+                                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.35rem; max-width:260px; line-height:1.35;">
+                                        Motivo: {{ res[5] }}
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td style="font-size:0.85rem;">
+                                {% if res[3] == 'Completada' %}<strong style="color:var(--green);">${{ res[6] }}</strong>
+                                {% elif res[3] == 'Cancelada' %}<span style="color:var(--muted);">$0</span>
+                                {% else %}<span style="color:var(--muted);">Pendiente</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if rol == 'cliente' and res[3] == 'Activa' %}
+                                    <form action="{{ url_for('gestionar_cita') }}" method="POST" class="d-flex align-items-center gap-2">
+                                        <input type="hidden" name="id_reserva" value="{{ res[0] }}">
+                                        <div class="rating-group">
+                                            <input type="number" name="notas" placeholder="1-5" min="1" max="5" required>
+                                            <button type="submit" name="accion" value="completar" class="action-btn btn-pay">✔ Pagar</button>
+                                        </div>
+                                        <button type="submit" name="accion" value="cancelar" class="action-btn btn-cancel">✕</button>
+                                    </form>
+                                {% elif rol == 'consultor' and res[3] == 'Activa' %}
+                                    <form action="{{ url_for('gestionar_cita') }}" method="POST" class="d-flex align-items-center gap-2 flex-wrap">
+                                        <input type="hidden" name="id_reserva" value="{{ res[0] }}">
+                                        <input type="text" name="notas" placeholder="Motivo de cancelación" required maxlength="180"
+                                               style="min-width:220px; flex:1; padding:0.55rem 0.75rem; border:1px solid rgba(15,30,53,0.15); border-radius:12px; font-size:0.82rem;">
+                                        <button type="submit" name="accion" value="cancelar" class="action-btn btn-cancel" onclick="return confirm('¿Cancelar esta cita?')">Cancelar</button>
+                                    </form>
+                                {% else %}
+                                    <span style="color:var(--muted); font-size:0.78rem;">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-times"></i>
+                                    <p>No hay reservas registradas aún.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ════ BOOKING FORM (solo clientes) ════ -->
+        {% if rol == 'cliente' %}
+        <div id="booking-section" class="panel-card">
+            <div class="panel-card-header">
+                <div class="header-title">
+                    <div class="header-icon"><i class="fas fa-plus"></i></div>
+                    Reservar Nueva Cita
+                </div>
+            </div>
+            <div class="panel-card-body">
+                <form action="{{ url_for('crear_cita') }}" method="POST" id="form-reserva">
+
+                    <div style="margin-bottom:1rem;">
+                        <label style="font-size:0.82rem; font-weight:600; margin-bottom:0.6rem; display:block;">Selecciona un Experto</label>
+                        <select class="booking-select" name="consultor" id="select-consultor" required onchange="actualizarInfo()">
+                            <option value="" selected disabled>— Elige al consultor —</option>
+                            {% for c in consultores %}
+                            <option value="{{ c.nombre }}"
+                                    data-tarifa="{{ c.tarifa }}"
+                                    data-desc="{{ c.descripcion }}"
+                                    data-exp="{{ c.experiencia }}"
+                                    data-descuento-txt="{{ c.descuento_txt }}"
+                                    data-precio-final="{{ c.precio_final_estimado }}">
+                                {{ c.nombre }} — {{ c.especialidad }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Info del consultor seleccionado -->
+                    <div class="booking-info-box" id="info-experto">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:0.6rem;">
+                            <div class="consultant-avatar av-1" id="info-avatar" style="width:36px;height:36px;font-size:0.9rem;">?</div>
+                            <div>
+                                <div style="font-weight:600; font-size:0.9rem;" id="info-nombre">—</div>
+                                <div style="font-size:0.75rem; color:var(--muted);" id="info-desc">—</div>
+                            </div>
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:0.4rem;">
+                            <i class="fas fa-clock me-1"></i> <span id="info-exp">0</span> años de experiencia
+                        </div>
+                        <div class="price-compare">
+                            <span class="price-original" id="info-precio-base">$0</span>
+                            <span class="price-final" id="info-total">$0</span>
+                            <span style="font-size:0.75rem; color:var(--muted);">USD / sesión</span>
+                        </div>
+                        <div id="info-badge-wrap" style="margin-top:0.4rem; display:none;">
+                            <span style="background:#fff0f3; color:#e03131; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:10px;" id="info-badge">0% OFF</span>
+                            <span style="font-size:0.75rem; color:var(--green); margin-left:4px;">Primera cita</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:1rem;">
+                        <label style="font-size:0.82rem; font-weight:600; margin-bottom:0.6rem; display:block;">
+                            Fecha y Hora
+                            <span style="font-size:0.72rem; color:var(--muted); margin-left:4px;" id="tz-note"></span>
+                        </label>
+                        <input type="datetime-local" name="fecha" id="fecha-input" class="field-input" required>
+                    </div>
+
+                    <!-- Simulación de pago -->
+                    <div class="payment-section" id="seccion-pago">
+                        <h6><i class="fas fa-lock me-2" style="color:var(--gold);"></i>Pago Seguro (Simulación)</h6>
+                        <div style="position:relative;">
+                            <input type="text" class="field-input" id="card-number"
+                                placeholder="0000 0000 0000 0000"
+                                maxlength="19"
+                                inputmode="numeric"
+                                autocomplete="cc-number">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                            <input type="text" class="field-input" id="card-expiry"
+                                placeholder="MM/AA"
+                                maxlength="5"
+                                inputmode="numeric"
+                                autocomplete="cc-exp">
+                            <input type="password" class="field-input" id="card-cvc"
+                                placeholder="CVC"
+                                maxlength="3"
+                                inputmode="numeric"
+                                autocomplete="cc-csc">
+                        
+                        
+                        </div>
+                        
+                    </div>
+
+                    <button type="submit" class="btn-book" id="btn-submit">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        <span id="btn-text">Confirmar Reserva</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- ═══════════════ AI ASSISTANT PANEL ═══════════════ -->
+<!--
+    INTEGRACIÓN API CLAUDE (Sección 21 del informe)
+    El asistente usa la API de Anthropic para responder preguntas sobre
+    el sistema de consultorías, ayudar a los usuarios a tomar decisiones
+    y brindar soporte contextualizado según el rol.
+-->
+<div class="ai-panel" id="ai-panel">
+    <div class="ai-header" onclick="toggleAI()">
+        <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+        <div class="ai-header-text">
+            <div class="ai-name">Asistente IA — Consultores S.A.S</div>
+            <div class="ai-status">
+                <div class="ai-status-dot"></div>
+                En línea · Potenciado por Claude
+            </div>
+        </div>
+        <button class="ai-toggle-btn" aria-label="Expandir asistente">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+    </div>
+
+    <div class="ai-messages" id="ai-messages">
+        <div class="ai-msg ai" id="ai-welcome">
+            ¡Hola, <strong>{{ usuario }}</strong>! Soy tu asistente inteligente. Puedo ayudarte con tus consultas, explicarte el funcionamiento del sistema o darte recomendaciones. ¿En qué te puedo ayudar?
+        </div>
+    </div>
+
+    <div class="ai-quick-btns" id="quick-btns">
+        {% if rol == 'cliente' %}
+        <button class="quick-btn" onclick="sendQuick('¿Cómo agendo una cita?')">¿Cómo agendar?</button>
+        <button class="quick-btn" onclick="sendQuick('¿Cómo cancelo una cita?')">Cancelar cita</button>
+        <button class="quick-btn" onclick="sendQuick('¿Cómo funciona el sistema de calificación?')">Calificaciones</button>
+        {% elif rol == 'consultor' %}
+        <button class="quick-btn" onclick="sendQuick('¿Cómo gestiono mis citas?')">Gestionar citas</button>
+        <button class="quick-btn" onclick="sendQuick('¿Cómo funcionan las ganancias?')">Mis ganancias</button>
+        <button class="quick-btn" onclick="sendQuick('¿Cuál es la regla de cancelación de 24 horas?')">Regla 24h</button>
+        {% else %}
+        <button class="quick-btn" onclick="sendQuick('¿Qué significan los KPIs del panel admin?')">KPIs</button>
+        <button class="quick-btn" onclick="sendQuick('¿Cómo identifico al consultor con mejor rendimiento?')">Consultor top</button>
+        <button class="quick-btn" onclick="sendQuick('¿Cómo funciona el modelo de monetización?')">Monetización</button>
+        {% endif %}
+    </div>
+
+    <div class="ai-input-area">
+        <input type="text" class="ai-input" id="ai-input" placeholder="Escribe tu pregunta..." onkeydown="handleAIKey(event)">
+        <button class="ai-send-btn" id="ai-send" onclick="sendAIMessage()" aria-label="Enviar">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+// ══════════════════════════════════════════
+// WORLDTIMEAPI — Sección 21 del informe
+// Sincronización con zona horaria America/Bogota
+// para validar correctamente la regla de las 24 horas
+// ══════════════════════════════════════════
+let colombiaTime = null;
+
+async function syncWorldTime() {
+    try {
+        const res = await fetch('https://worldtimeapi.org/api/timezone/America/Bogota');
+        const data = await res.json();
+        colombiaTime = new Date(data.datetime);
+        updateClocks(colombiaTime, data.abbreviation);
+        setMinDateFromAPI(colombiaTime);
+    } catch(e) {
+        // Fallback al tiempo local
+        colombiaTime = new Date();
+        updateClocks(colombiaTime, 'Local');
+        setMinDateFromAPI(colombiaTime);
+    }
+}
+
+function updateClocks(dt, abbr) {
+    const hhmm = dt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
+    document.getElementById('live-time').textContent = `${hhmm} · ${abbr}`;
+    document.getElementById('tz-sidebar').textContent = `${hhmm} — Bogotá`;
+    const note = document.getElementById('tz-note');
+    if (note) note.textContent = `(Hora sincronizada: ${abbr})`;
+}
+
+function setMinDateFromAPI(dt) {
+    // Sección 15 del informe: la regla de 24h se evalúa con hora sincronizada
+    const input = document.getElementById('fecha-input');
+    if (!input) return;
+    const minDate = new Date(dt.getTime() + 60 * 60 * 1000); // mínimo 1h adelante
+    const iso = minDate.toISOString().slice(0, 16);
+    input.min = iso;
+}
+
+// Actualizar reloj cada minuto
+setInterval(() => {
+    if (colombiaTime) {
+        colombiaTime = new Date(colombiaTime.getTime() + 60000);
+        updateClocks(colombiaTime, 'COT');
+    }
+}, 60000);
+
+syncWorldTime();
+
+// ══════════════════════════════════════════
+// BOOKING — Actualización dinámica del formulario
+// ══════════════════════════════════════════
+const avatarClasses = ['av-1','av-2','av-3','av-4','av-5'];
+
+function actualizarInfo() {
+    const select = document.getElementById('select-consultor');
+    const option = select.options[select.selectedIndex];
+    const infoBox = document.getElementById('info-experto');
+    const payBox = document.getElementById('seccion-pago');
+
+    if (!option.value) {
+        infoBox.style.display = 'none';
+        payBox.style.display = 'none';
+        return;
+    }
+
+    const desc = option.getAttribute('data-desc');
+    const exp = option.getAttribute('data-exp');
+    const tarifaBase = option.getAttribute('data-tarifa');
+    const descuentoTxt = option.getAttribute('data-descuento-txt');
+    const precioFinal = option.getAttribute('data-precio-final');
+
+    infoBox.style.display = 'block';
+    payBox.style.display = 'block';
+
+    const avatarEl = document.getElementById('info-avatar');
+    avatarEl.className = `consultant-avatar ${avatarClasses[select.selectedIndex % avatarClasses.length]}`;
+    avatarEl.textContent = option.text.charAt(0).toUpperCase();
+
+    document.getElementById('info-nombre').textContent = option.text;
+    document.getElementById('info-desc').textContent = desc || '—';
+    document.getElementById('info-exp').textContent = exp || '0';
+    document.getElementById('info-precio-base').textContent = `$${tarifaBase}`;
+    document.getElementById('info-total').textContent = `$${precioFinal}`;
+
+    const badgeWrap = document.getElementById('info-badge-wrap');
+    if (descuentoTxt && descuentoTxt !== '0%') {
+        badgeWrap.style.display = 'block';
+        document.getElementById('info-badge').textContent = descuentoTxt + ' OFF';
+    } else {
+        badgeWrap.style.display = 'none';
+    }
+
+    document.getElementById('btn-text').textContent = `Pagar $${precioFinal} y Reservar`;
+}
+
+document.getElementById('form-reserva')?.addEventListener('submit', function(e) {
+    const card = document.getElementById('card-number');
+    if (card && card.value.length < 5) {
+        e.preventDefault();
+        alert('Por favor ingresa los datos de la tarjeta para simular el pago.');
+        card.focus();
+    }
+});
+
+// ══════════════════════════════════════════
+// AI ASSISTANT — Claude API
+// Sección 21 del informe: Integración con API externa
+// Usa la API de Anthropic para responder consultas
+// contextualizadas sobre el sistema
+// ══════════════════════════════════════════
+
+const ROL_USUARIO = "{{ rol }}";
+const NOMBRE_USUARIO = "{{ usuario }}";
+let aiOpen = false;
+let aiLoading = false;
+
+const AI_SYSTEM_PROMPT = `Eres el asistente inteligente de la plataforma "Consultores Expertos S.A.S", una firma colombiana de asesorías digitales.
+
+El usuario se llama "${NOMBRE_USUARIO}" y tiene rol "${ROL_USUARIO}" en la plataforma.
+
+Tu función es:
+1. Ayudar a los usuarios a entender y usar la plataforma
+2. Responder preguntas sobre cómo agendar, pagar, cancelar o gestionar citas
+3. Explicar las reglas de negocio (ej: regla de cancelación de 24h)
+4. Brindar información sobre los planes de precios
+5. Guiar al administrador en la interpretación de KPIs
+
+Reglas de negocio clave:
+- Las citas se pueden cancelar con más de 24 horas de anticipación sin costo
+- Si se cancela con menos de 24h, puede aplicar cargo
+- El sistema usa zona horaria America/Bogota (sincronizada con WorldTimeAPI)
+- Los consultores tienen tarifa por hora en USD
+- Se pueden ofrecer descuentos en la primera cita
+- La calificación (1-5 estrellas) libera el pago al consultor
+
+Roles del sistema:
+- Cliente: puede agendar citas, pagar y calificar
+- Consultor: gestiona su agenda y ve sus ganancias
+- Admin: ve KPIs: ingresos totales, usuarios activos, consultor estrella
+
+Responde siempre en español colombiano, de forma clara, amable y concisa (máximo 3-4 oraciones por respuesta a menos que se pida más detalle).`;
+
+function toggleAI() {
+    aiOpen = !aiOpen;
+    document.getElementById('ai-panel').classList.toggle('open', aiOpen);
+    if (aiOpen) document.getElementById('ai-input').focus();
+}
+
+function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function handleAIKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendAIMessage();
+    }
+}
+
+function sendQuick(text) {
+    document.getElementById('ai-input').value = text;
+    sendAIMessage();
+}
+
+function appendMsg(text, type) {
+    const container = document.getElementById('ai-messages');
+    const div = document.createElement('div');
+    div.className = `ai-msg ${type}`;
+    div.innerHTML = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
+
+function showTyping() {
+    const container = document.getElementById('ai-messages');
+    const div = document.createElement('div');
+    div.className = 'ai-typing';
+    div.id = 'ai-typing';
+    div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+    const el = document.getElementById('ai-typing');
+    if (el) el.remove();
+}
+
+async function sendAIMessage() {
+    if (aiLoading) return;
+
+    const input = document.getElementById('ai-input');
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    appendMsg(text, 'user');
+    input.value = '';
+
+    aiLoading = true;
+    document.getElementById('ai-send').disabled = true;
+    showTyping();
+
+    try {
+
+        const response = await fetch('/api/asistente', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mensaje: text
+            })
+        });
+
+        const data = await response.json();
+
+        removeTyping();
+
+        if (response.ok && data.respuesta) {
+            appendMsg(data.respuesta, 'ai');
+        } else {
+            appendMsg(
+                data.error || 'No pude generar una respuesta.',
+                'ai'
+            );
+        }
+
+    } catch(err) {
+
+        removeTyping();
+
+        appendMsg(
+            'Hubo un error de conexión.',
+            'ai'
+        );
+
+        console.error(err);
+    }
+
+    aiLoading = false;
+    document.getElementById('ai-send').disabled = false;
+}
+
+// ══════════════════════════════════════════
+// VALIDACIÓN Y FORMATEO — Datos de tarjeta
+// ══════════════════════════════════════════
+
+// Número de tarjeta: solo dígitos, formato 0000 0000 0000 0000
+document.getElementById('card-number').addEventListener('input', function() {
+    let val = this.value.replace(/\D/g, '').slice(0, 16);
+    this.value = val.replace(/(.{4})/g, '$1 ').trim();
+});
+document.getElementById('card-number').addEventListener('keydown', function(e) {
+    const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab'];
+    if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault();
+});
+
+// Fecha de vencimiento: / aparece automáticamente al escribir el 3er dígito
+// Fecha de vencimiento: / fijo visible desde el inicio
+    document.getElementById('card-expiry').addEventListener('focus', function() {
+        if (this.value === '') {
+            this.value = '/';
+            this.setSelectionRange(0, 0);
+        }
+    });
+
+    document.getElementById('card-expiry').addEventListener('keydown', function(e) {
+        const pos = this.selectionStart;
+
+        // Nunca borrar el /
+        if (e.key === 'Backspace' && pos <= 1) {
+            e.preventDefault();
+            return;
+        }
+        if (e.key === 'Delete' && pos === 1) {
+            e.preventDefault();
+            return;
+        }
+
+        // Solo dígitos y teclas de navegación
+        const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab'];
+        if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+            e.preventDefault();
+            return;
+        }
+
+        // Máximo 4 dígitos (MM + AA)
+        const digits = this.value.replace(/\D/g, '');
+        if (/^\d$/.test(e.key) && digits.length >= 4) {
+            e.preventDefault();
+            return;
+        }
+
+        // Insertar dígito manualmente para control total
+        if (/^\d$/.test(e.key)) {
+            e.preventDefault();
+            const d = this.value.replace(/\D/g, '');
+            const newDigits = d.slice(0, pos === 0 ? 0 : pos <= 1 ? 0 : pos - 1) + e.key + d.slice(pos <= 1 ? pos : pos - 1);
+            const mm = newDigits.slice(0, 2).padEnd(2, '');
+            const aa = newDigits.slice(2, 4);
+            this.value = mm + '/' + aa;
+
+            // Posicionar cursor correctamente
+            const newPos = pos <= 1 ? pos + 1 : pos + 1;
+            this.setSelectionRange(newPos > 2 ? newPos : newPos, newPos > 2 ? newPos : newPos);
+        }
+    });
+
+    document.getElementById('card-expiry').addEventListener('blur', function() {
+        if (this.value === '/') this.value = '';
+    });
+
+
+// CVC: solo dígitos, máximo 3
+document.getElementById('card-cvc').addEventListener('keydown', function(e) {
+    const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab'];
+    if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault();
+});
+document.getElementById('card-cvc').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 3);
+});
+
+        // Validación al enviar
+    document.getElementById('form-reserva')?.addEventListener('submit', function(e) {
+        const seccionPago = document.getElementById('seccion-pago');
+        if (seccionPago.style.display === 'none') return; // no validar si no se muestra
+
+        const cardNum = document.getElementById('card-number').value.replace(/\s/g, '');
+        const expiry  = document.getElementById('card-expiry').value;
+        const cvc     = document.getElementById('card-cvc').value;
+
+        if (cardNum.length !== 16) {
+            e.preventDefault();
+            alert('El número de tarjeta debe tener exactamente 16 dígitos.');
+            document.getElementById('card-number').focus();
+            return;
+        }
+        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
+            e.preventDefault();
+            alert('La fecha de vencimiento debe tener formato MM/AA (ej: 08/27).');
+            document.getElementById('card-expiry').focus();
+            return;
+        }
+        if (cvc.length !== 3) {
+            e.preventDefault();
+            alert('El CVC debe tener exactamente 3 dígitos.');
+            document.getElementById('card-cvc').focus();
+        }
+    });
+
+</script>
+<script>
+// ── Web Push: registro de service worker y suscripción ──
+async function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+}
+
+document.getElementById('enable-push-btn').addEventListener('click', async function() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        alert('Tu navegador no soporta push notifications.');
+        return;
+    }
+    try {
+        const reg = await navigator.serviceWorker.register('/static/sw.js');
+        console.log('SW registrado', reg);
+        const res = await fetch('/vapid_public_key');
+        const data = await res.json();
+        const publicKey = data.publicKey;
+        const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicKey)
+        });
+        const ok = await fetch('/push/subscribe', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({subscription: sub})
+        });
+        if (ok.ok) alert('Suscripción a notificaciones exitosa.');
+        else alert('Error al suscribirse.');
+    } catch (e) {
+        console.error(e);
+        alert('Error registrando notificaciones: ' + e.message);
+    }
+});
+</script>
+</body>
+</html>

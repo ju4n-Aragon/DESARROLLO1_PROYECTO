@@ -1,0 +1,6 @@
+psycopg2
+pillow
+tkcalendar
+pywebpush
+cryptography
+stripe
